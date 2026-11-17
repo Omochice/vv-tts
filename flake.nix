@@ -63,7 +63,6 @@
             # .git is a file in a linked worktree, so the default .git/config would make treefmt format the main checkout instead.
             projectRootFile = "flake.nix";
             settings.global.excludes = [ ];
-            settings.formatter.ktfmt.options = [ "--kotlinlang-style" ];
             settings.formatter.rumdl-format.options = [
               "--config"
               (toString rumdlConfig)
