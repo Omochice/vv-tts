@@ -22,4 +22,7 @@ android {
 
 dependencies {
   implementation(project(":text"))
+
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlin.test.junit)
 }
