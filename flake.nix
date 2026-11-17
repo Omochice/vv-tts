@@ -32,6 +32,10 @@
       let
         pkgs = import nixpkgs {
           inherit system;
+          config = {
+            allowUnfree = true;
+            android_sdk.accept_license = true;
+          };
           overlays = [
             nur-packages.overlays.default
           ];
@@ -119,6 +123,19 @@
             };
           };
         };
+        androidSdk =
+          (pkgs.androidenv.composeAndroidPackages {
+            platformVersions = [ "37.0" ];
+            buildToolsVersions = [ "36.0.0" ];
+            includeCmake = false;
+          }).androidsdk;
+        # A setup hook keeps ANDROID_HOME next to the SDK it points at.
+        # Setting it on mkShell would pull the SDK into every dev shell, including the ones that only lint.
+        androidSdkHome = pkgs.makeSetupHook { name = "android-sdk-home"; } (
+          pkgs.writeText "android-sdk-home.sh" ''
+            export ANDROID_HOME=${androidSdk}/libexec/android-sdk
+          ''
+        );
         devPackages = rec {
           # keep-sorted start block=yes
           actions = with pkgs; [
@@ -126,11 +143,17 @@
             ghalint
             zizmor
           ];
+          android = [
+            androidSdkHome
+            pkgs.gradle_9
+            pkgs.jdk21
+          ];
           # keep-sorted end
           default = [
             treefmt.config.build.wrapper
           ]
-          ++ actions;
+          ++ actions
+          ++ android;
         };
       in
       {
