@@ -61,7 +61,12 @@ class SettingsActivity : Activity() {
     awaitingPermission = savedInstanceState?.getString(STATE_AWAITING_PERMISSION)
     status = TextView(this).apply { textSize = 16f }
     terms = TermsDialog(this, catalog, installer, ::requestNotificationsThenSchedule)
-    dictionary = DictionarySection(this, UserDictionary(UserDictionaryFile(filesDir)))
+    dictionary =
+        DictionarySection(
+            this,
+            UserDictionary(UserDictionaryFile(filesDir)),
+            BackgroundPronouncer(this, ::previewVoice),
+        )
     defaultVoice = DefaultVoicePicker(this)
     voiceModelRows =
         VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }
@@ -167,6 +172,14 @@ class SettingsActivity : Activity() {
     defaultVoice.show(installed)
     voiceModelRows.update(layout::isInstalled, current.allowsDownload)
   }
+
+  // The default voice, because the preview should sound like what clients get unless they choose.
+  private fun previewVoice(): SpeakableVoice? =
+      resolveVoice(
+          null,
+          PreferredVoiceStore(this).get(),
+          installedVoices(catalog.voiceModels, layout),
+      )
 
   private fun describe(current: SettingsStatus): String =
       when (current) {

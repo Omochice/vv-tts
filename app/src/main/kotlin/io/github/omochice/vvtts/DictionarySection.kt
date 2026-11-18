@@ -15,15 +15,17 @@ import java.io.IOException
 /**
  * Lists the words of [dictionary] over [activity], and lets the user add, change and remove them.
  *
- * It talks to the stored dictionary only; the speech engine notices the change on its next
+ * It changes the stored dictionary only; the speech engine notices the change on its next
  * synthesis.
+ * It asks [pronouncer] for the accents a reading offers.
  */
 internal class DictionarySection(
     private val activity: Activity,
     private val dictionary: UserDictionary,
+    pronouncer: BackgroundPronouncer,
 ) {
   private val wordDialog =
-      WordDialog(activity) {
+      WordDialog(activity, pronouncer) {
         dictionary.add(it)
         refresh()
       }

@@ -42,8 +42,19 @@
     <string name="dictionary_error_not_kana">読みはひらがなかカタカナだけで書いてください。</string>
     <string name="dictionary_error_small_kana">読みの小さい字の並びを確かめてください。</string>
     <string name="dictionary_error_accent">アクセントを選び直してください。</string>
+    <string name="accent_line">アクセント：%1$s</string>
+    <string name="accent_flat">平板</string>
+    <string name="accent_position">%1$d拍目のあとで下がる</string>
+    <string name="accent_note">選ばないときは平板になります。</string>
+    <string name="accent_needs_voice">アクセントを選ぶには音声モデルが必要です。</string>
+    <string name="accent_unavailable">この読みではアクセントを選べません。</string>
+    <string name="accent_engine_failed">音声エンジンを使えませんでした。</string>
+    <string name="accent_choose_title">アクセント</string>
     <string name="button_add">追加</string>
     <string name="button_save">保存</string>
+    <string name="button_choose">選ぶ</string>
+    <string name="button_preparing">準備中…</string>
+    <string name="button_decide">決定</string>
     <string name="button_remove">削除</string>
     <string name="button_cancel">キャンセル</string>
 
