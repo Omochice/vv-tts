@@ -1,0 +1,3 @@
+[voicevox-core-java-packages]
+fetch.url = "https://github.com/VOICEVOX/voicevox_core/releases/download/$ver/java_packages.zip"
+src.manual = "0.17.1"

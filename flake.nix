@@ -62,7 +62,7 @@
           {
             # .git is a file in a linked worktree, so the default .git/config would make treefmt format the main checkout instead.
             projectRootFile = "flake.nix";
-            settings.global.excludes = [ ];
+            settings.global.excludes = [ "_sources/*" ];
             settings.formatter.rumdl-format.options = [
               "--config"
               (toString rumdlConfig)
@@ -139,12 +139,15 @@
             export ANDROID_SDK_ROOT=$ANDROID_HOME
           ''
         );
+        sources = pkgs.callPackage ./_sources/generated.nix { };
         # VOICEVOX CORE publishes its Java bindings only as a zipped Maven repository on GitHub releases, not on Maven Central.
-        voicevoxCoreMaven = pkgs.fetchzip {
-          url = "https://github.com/VOICEVOX/voicevox_core/releases/download/0.17.1/java_packages.zip";
-          hash = "sha256-FLnV7p9SoPmRrPVSC8yFegoDjvpQzwraDXULgyxMLqM=";
-          stripRoot = false;
-        };
+        # Not fetched with nvfetcher's fetch.tarball, because it strips the single top-level directory jp/, which is part of the Maven layout.
+        voicevoxCoreMaven =
+          pkgs.runCommand "voicevox-core-maven-${sources.voicevox-core-java-packages.version}"
+            { nativeBuildInputs = [ pkgs.unzip ]; }
+            ''
+              unzip -q ${sources.voicevox-core-java-packages.src} -d $out
+            '';
         voicevoxCoreMavenRepo = pkgs.makeSetupHook { name = "voicevox-core-maven-repo"; } (
           pkgs.writeText "voicevox-core-maven-repo.sh" ''
             export VOICEVOX_CORE_MAVEN_REPO=${voicevoxCoreMaven}
@@ -173,6 +176,18 @@
       in
       {
         # keep-sorted start block=yes
+        apps.nvfetcher = {
+          type = "app";
+          program = pkgs.lib.getExe (
+            pkgs.writeShellApplication {
+              name = "nvfetcher";
+              runtimeInputs = [ pkgs.nvfetcher ];
+              text = ''
+                nvfetcher "$@"
+              '';
+            }
+          );
+        };
         checks = {
           # keep-sorted start
           actions =
