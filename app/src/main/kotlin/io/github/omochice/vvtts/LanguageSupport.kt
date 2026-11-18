@@ -1,5 +1,7 @@
 package io.github.omochice.vvtts
 
+import android.speech.tts.TextToSpeech
+
 private const val JAPANESE = "jpn"
 private const val JAPAN = "JPN"
 
@@ -8,6 +10,20 @@ enum class LanguageSupport {
   LANGUAGE_AND_COUNTRY,
   LANGUAGE,
   NONE;
+
+  /**
+   * Returns the `TextToSpeech.LANG_*` code that reports this support to the framework.
+   *
+   * @param isAnyVoiceInstalled whether the engine can speak at all; while it cannot, a supported
+   *   locale is reported as missing data.
+   */
+  fun ttsResult(isAnyVoiceInstalled: Boolean): Int =
+      when {
+        this == NONE -> TextToSpeech.LANG_NOT_SUPPORTED
+        !isAnyVoiceInstalled -> TextToSpeech.LANG_MISSING_DATA
+        this == LANGUAGE_AND_COUNTRY -> TextToSpeech.LANG_COUNTRY_AVAILABLE
+        else -> TextToSpeech.LANG_AVAILABLE
+      }
 
   companion object {
     /**
