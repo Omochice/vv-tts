@@ -78,10 +78,10 @@ class SettingsActivity : Activity() {
           addView(status)
           addView(termsButton)
           addView(defaultVoice.view)
+          addView(dictionary.view)
           addView(headingView(getString(R.string.voice_models_heading)))
           addView(TextView(this@SettingsActivity).apply { setText(R.string.voice_models_note) })
           addView(voiceModelRows.view)
-          addView(dictionary.view)
         }
     setContentView(
         ScrollView(this).apply {
