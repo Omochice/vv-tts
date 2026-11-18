@@ -71,6 +71,15 @@ class AssetInstaller(
     }
   }
 
+  /**
+   * Returns how many bytes an [install] of the voice model named [voiceModelFileName] would
+   * download now, which is also the total it reports progress against.
+   *
+   * @throws IllegalArgumentException if [catalog] has no voice model named [voiceModelFileName].
+   */
+  fun bytesToDownload(voiceModelFileName: String): Long =
+      missingParts(voiceModelNamed(voiceModelFileName)).downloadBytes()
+
   private fun voiceModelNamed(fileName: String): VoiceModel {
     val voiceModel = catalog.voiceModels.find { it.file.fileName == fileName }
     requireNotNull(voiceModel) { "the catalog has no voice model named $fileName" }
