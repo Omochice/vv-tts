@@ -27,7 +27,6 @@ class VvTtsService : TextToSpeechService() {
   private val catalog by lazy { AssetCatalog.load() }
   private val layout by lazy { AssetLayout(filesDir) }
   private val preferredVoice by lazy { PreferredVoiceStore(this) }
-  private var loop: SynthesisLoop? = null
   private val stopRequested = AtomicBoolean(false)
 
   override fun onIsLanguageAvailable(lang: String?, country: String?, variant: String?): Int =
@@ -104,34 +103,20 @@ class VvTtsService : TextToSpeechService() {
       callback.error(TextToSpeech.ERROR_NOT_INSTALLED_YET)
       return
     }
-    val loop =
-        try {
-          loopFor(layout)
-        } catch (e: Exception) {
-          Log.e(TAG, "cannot start the speech engine", e)
-          callback.error(TextToSpeech.ERROR_SYNTHESIS)
-          return
-        }
-    // The framework can stop a request before onSynthesizeText runs.
-    val started = callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
-    if (started != TextToSpeech.SUCCESS) return
+    var engineStarted = false
     try {
-      loop.run(
-          chunks,
-          voice,
-          prosody,
-          CallbackSink(callback),
-      ) {
-        stopRequested.get()
+      sharedLoop.use({ SynthesisLoop(VoicevoxSpeechEngine(layout, cacheDir)) }) { loop ->
+        engineStarted = true
+        // The framework can stop a request before onSynthesizeText runs.
+        val started = callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
+        if (started != TextToSpeech.SUCCESS) return@use
+        loop.run(chunks, voice, prosody, CallbackSink(callback)) { stopRequested.get() }
       }
     } catch (e: Exception) {
-      Log.e(TAG, "synthesis failed", e)
+      Log.e(TAG, if (engineStarted) "synthesis failed" else "cannot start the speech engine", e)
       callback.error(TextToSpeech.ERROR_SYNTHESIS)
     }
   }
-
-  private fun loopFor(layout: AssetLayout): SynthesisLoop =
-      loop ?: SynthesisLoop(VoicevoxSpeechEngine(layout, cacheDir)).also { loop = it }
 
   private fun logRequest(
       request: SynthesisRequest,
@@ -155,5 +140,17 @@ class VvTtsService : TextToSpeechService() {
 
     override fun write(pcm: ByteArray, offset: Int, length: Int): Boolean =
         callback.audioAvailable(pcm, offset, length) == TextToSpeech.SUCCESS
+  }
+
+  private companion object {
+    // The framework destroys the service when its last client unbinds and creates a new instance in
+    // the same process on the next bind.
+    // A per-instance engine leaked one engine and voice model per connection: native heap grew by
+    // about 390 MB each time until Android killed the process on the 8th connection.
+    // Closing the engine in onDestroy is impossible because VOICEVOX CORE's Java API has no public
+    // close, and its finalizers rarely run because the Java heap stays at a few megabytes.
+    // Instances synthesize on threads of their own, and an old instance's synthesis can still be in
+    // flight when a new instance starts, hence one user at a time.
+    val sharedLoop = ExclusiveLazy<SynthesisLoop>()
   }
 }
