@@ -154,7 +154,7 @@ private fun pathComponents(name: String): List<String> {
 }
 
 private fun copyExactly(input: DataInputStream, output: OutputStream, size: Long) {
-  val buffer = ByteArray(COPY_BUFFER_BYTES)
+  val buffer = ByteArray(64 * 1024)
   var remaining = size
   while (remaining > 0) {
     val chunk = minOf(remaining, buffer.size.toLong()).toInt()
@@ -170,7 +170,6 @@ private fun DataInputStream.skipFully(count: Long) {
 
 private const val BLOCK = 512
 private const val GNU_MAGIC = "ustar  \u0000"
-private const val COPY_BUFFER_BYTES = 64 * 1024
 private const val NAME_OFFSET = 0
 private const val NAME_LENGTH = 100
 private const val SIZE_OFFSET = 124
