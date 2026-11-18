@@ -9,8 +9,6 @@ import android.speech.tts.Voice
 import android.util.Log
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
-import io.github.omochice.vvtts.dictionary.DictionaryChanges
-import io.github.omochice.vvtts.dictionary.UserDictionaryFile
 import io.github.omochice.vvtts.text.RubyNormalizer
 import io.github.omochice.vvtts.text.SentenceSplitter
 import io.github.omochice.vvtts.text.limitLength
@@ -107,23 +105,20 @@ class VvTtsService : TextToSpeechService() {
     }
     var engineStarted = false
     try {
-      sharedLoop.use(::newLoop) { loop ->
+      SharedSpeechEngine.useEngine(this) { engine ->
         engineStarted = true
         // The framework can stop a request before onSynthesizeText runs.
         val started = callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
-        if (started != TextToSpeech.SUCCESS) return@use
-        loop.run(chunks, voice, prosody, CallbackSink(callback)) { stopRequested.get() }
+        if (started != TextToSpeech.SUCCESS) return@useEngine
+        SynthesisLoop(engine).run(chunks, voice, prosody, CallbackSink(callback)) {
+          stopRequested.get()
+        }
       }
     } catch (e: Exception) {
       Log.e(TAG, if (engineStarted) "synthesis failed" else "cannot start the speech engine", e)
       callback.error(TextToSpeech.ERROR_SYNTHESIS)
     }
   }
-
-  private fun newLoop() =
-      SynthesisLoop(
-          VoicevoxSpeechEngine(layout, cacheDir, DictionaryChanges(UserDictionaryFile(filesDir)))
-      )
 
   private fun logRequest(
       request: SynthesisRequest,
@@ -147,12 +142,5 @@ class VvTtsService : TextToSpeechService() {
 
     override fun write(pcm: ByteArray, offset: Int, length: Int): Boolean =
         callback.audioAvailable(pcm, offset, length) == TextToSpeech.SUCCESS
-  }
-
-  private companion object {
-    // Not per instance, because the framework recreates the service on every bind and VOICEVOX
-    // CORE's Java API has no close, so each connection leaked about 390 MB of native heap.
-    // One user at a time, because an old instance can still be synthesizing when a new one starts.
-    val sharedLoop = ExclusiveLazy<SynthesisLoop>()
   }
 }
