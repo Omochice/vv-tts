@@ -7,6 +7,7 @@ import kotlin.test.Test
 
 private const val APP = "io.github.omochice.vvtts"
 private const val ASSETS = "$APP.assets"
+private const val DICTIONARY = "$APP.dictionary"
 private const val VOICEVOX_CORE = "jp.hiroshiba.voicevoxcore"
 
 class ImportBoundaryTest {
@@ -24,6 +25,21 @@ class ImportBoundaryTest {
           file.hasImport { import ->
             import.name.startsWith("android.") ||
                 (import.name.startsWith("$APP.") && !import.name.startsWith("$ASSETS."))
+          }
+        }
+  }
+
+  @Test
+  fun `dictionary imports neither Android nor VOICEVOX CORE`() {
+    production.files
+        .filter {
+          it.packagee?.name.let { name ->
+            name == DICTIONARY || name?.startsWith("$DICTIONARY.") == true
+          }
+        }
+        .assertFalse(strict = true) { file ->
+          file.hasImport { import ->
+            import.name.startsWith("android.") || import.name.startsWith("$VOICEVOX_CORE.")
           }
         }
   }
