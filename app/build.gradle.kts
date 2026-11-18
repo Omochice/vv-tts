@@ -19,6 +19,14 @@ android {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
+
+  lint {
+    warningsAsErrors = true
+    abortOnError = true
+    // Until the app has its own icon, a placeholder would only ship as if it were the real one.
+    // Remove this line together with adding the icon.
+    disable += "MissingApplicationIcon"
+  }
 }
 
 dependencies {

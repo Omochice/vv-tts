@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -8,10 +9,13 @@
 
     <application android:label="vv-tts">
 
+        <!-- Requiring a permission would shut out the reading apps that bind to the engine through
+             TextToSpeech, because no permission exists that every such app holds. -->
         <service
             android:name=".VvTtsService"
             android:exported="true"
-            android:label="vv-tts">
+            android:label="vv-tts"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.intent.action.TTS_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT" />
