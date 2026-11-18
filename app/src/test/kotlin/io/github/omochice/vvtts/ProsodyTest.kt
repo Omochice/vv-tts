@@ -25,6 +25,21 @@ class ProsodyTest {
   }
 
   @Test
+  fun `a rate below half the normal speed is spoken at half the normal speed`() {
+    assertEquals(0.5, Prosody.fromAndroid(rate = 10, pitch = 100).speedScale, tolerance)
+  }
+
+  @Test
+  fun `a rate just above half the normal speed is kept`() {
+    assertEquals(0.62, Prosody.fromAndroid(rate = 62, pitch = 100).speedScale, tolerance)
+  }
+
+  @Test
+  fun `a fast rate is not bounded from above`() {
+    assertEquals(3.0, Prosody.fromAndroid(rate = 300, pitch = 100).speedScale, tolerance)
+  }
+
+  @Test
   fun `a higher pitch raises the pitch scale by 0_15 per 100 points`() {
     assertEquals(0.15, Prosody.fromAndroid(rate = 100, pitch = 200).pitchScale, tolerance)
   }
