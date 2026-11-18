@@ -7,8 +7,13 @@ private const val JAPAN = "JPN"
 
 /** How closely a requested locale matches what this engine can speak. */
 enum class LanguageSupport {
+  /** Both the language and the country of the locale are spoken. */
   LANGUAGE_AND_COUNTRY,
+
+  /** The language of the locale is spoken, but not for its country. */
   LANGUAGE,
+
+  /** The language of the locale is not spoken. */
   NONE;
 
   /**
