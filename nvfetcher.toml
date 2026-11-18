@@ -1,3 +1,15 @@
 [voicevox-core-java-packages]
 fetch.url = "https://github.com/VOICEVOX/voicevox_core/releases/download/$ver/java_packages.zip"
 src.manual = "0.17.1"
+
+[voicevox-onnxruntime-android-arm64]
+fetch.url = "https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-$ver/voicevox_onnxruntime-android-arm64-$ver.tgz"
+src.manual = "1.23.2"
+
+[voicevox-vvm-readme]
+fetch.url = "https://github.com/VOICEVOX/voicevox_vvm/releases/download/$ver/README.txt"
+src.manual = "0.17.1"
+
+[voicevox-vvm-terms]
+fetch.url = "https://github.com/VOICEVOX/voicevox_vvm/releases/download/$ver/TERMS.txt"
+src.manual = "0.17.1"

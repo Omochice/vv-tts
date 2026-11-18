@@ -14,4 +14,28 @@
       sha256 = "sha256-0w1NOreC8DPCRiheLEYlNjODfGnYqNCzdsw/hdb8x6E=";
     };
   };
+  voicevox-onnxruntime-android-arm64 = {
+    pname = "voicevox-onnxruntime-android-arm64";
+    version = "1.23.2";
+    src = fetchurl {
+      url = "https://github.com/VOICEVOX/onnxruntime-builder/releases/download/voicevox_onnxruntime-1.23.2/voicevox_onnxruntime-android-arm64-1.23.2.tgz";
+      sha256 = "sha256-Q+b8KonqZBLUzCAhUEKjs02iL98Fwbt2JWpob4I3jUY=";
+    };
+  };
+  voicevox-vvm-readme = {
+    pname = "voicevox-vvm-readme";
+    version = "0.17.1";
+    src = fetchurl {
+      url = "https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.17.1/README.txt";
+      sha256 = "sha256-XyL8SpFaP6B+/zQiv8Nu5OzdfNyKo0tJcMS5z4wQk1Q=";
+    };
+  };
+  voicevox-vvm-terms = {
+    pname = "voicevox-vvm-terms";
+    version = "0.17.1";
+    src = fetchurl {
+      url = "https://github.com/VOICEVOX/voicevox_vvm/releases/download/0.17.1/TERMS.txt";
+      sha256 = "sha256-nAyvmLMe+C42huj8o51TyFllBZ0iBr48g+/DdR0yyDo=";
+    };
+  };
 }

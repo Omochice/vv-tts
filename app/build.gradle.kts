@@ -20,6 +20,15 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
+  sourceSets {
+    getByName("main") {
+      resources.directories.add(
+          providers.environmentVariable("VV_TTS_TERMS_RESOURCES").orNull
+              ?: error("VV_TTS_TERMS_RESOURCES is not set; enter the dev shell with `nix develop`")
+      )
+    }
+  }
+
   lint {
     warningsAsErrors = true
     abortOnError = true

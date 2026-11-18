@@ -153,6 +153,37 @@
             export VOICEVOX_CORE_MAVEN_REPO=${voicevoxCoreMaven}
           ''
         );
+        # Laid out as a Java resources root, so that Gradle adds it as a source directory instead of copying files by path.
+        termsResources =
+          let
+            onnxRuntime = sources.voicevox-onnxruntime-android-arm64;
+            archiveName = "voicevox_onnxruntime-android-arm64-${onnxRuntime.version}";
+          in
+          pkgs.runCommand "vv-tts-terms-resources"
+            {
+              nativeBuildInputs = [ pkgs.perl ];
+              catalog = ./app/src/main/resources/io/github/omochice/vvtts/assets/assets.tsv;
+            }
+            ''
+              # The terms shown must belong to the archive the app downloads, and that archive is pinned in assets.tsv, not here.
+              expected=$(perl -F'\t' -lane 'print $F[3] if $F[1] eq "${archiveName}.tgz"' "$catalog")
+              actual=$(sha256sum ${onnxRuntime.src} | perl -lane 'print $F[0]')
+              if [ "$actual" != "$expected" ]; then
+                echo "${archiveName}.tgz pinned in nvfetcher.toml has sha256 $actual, but assets.tsv pins '$expected'" >&2
+                exit 1
+              fi
+
+              dir=$out/io/github/omochice/vvtts/assets/terms
+              mkdir -p "$dir"
+              cp ${sources.voicevox-vvm-readme.src} "$dir/README.txt"
+              cp ${sources.voicevox-vvm-terms.src} "$dir/TERMS.txt"
+              tar -xzOf ${onnxRuntime.src} ${archiveName}/TERMS.txt >"$dir/ONNXRUNTIME_TERMS.txt"
+            '';
+        termsResourcesRoot = pkgs.makeSetupHook { name = "vv-tts-terms-resources"; } (
+          pkgs.writeText "vv-tts-terms-resources.sh" ''
+            export VV_TTS_TERMS_RESOURCES=${termsResources}
+          ''
+        );
         devPackages = rec {
           # keep-sorted start block=yes
           actions = with pkgs; [
@@ -164,6 +195,7 @@
             androidSdkHome
             pkgs.gradle_9
             pkgs.jdk21
+            termsResourcesRoot
             voicevoxCoreMavenRepo
           ];
           # keep-sorted end
