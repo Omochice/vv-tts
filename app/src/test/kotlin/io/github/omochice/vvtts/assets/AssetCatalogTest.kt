@@ -3,6 +3,7 @@ package io.github.omochice.vvtts.assets
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AssetCatalogTest {
@@ -97,12 +98,32 @@ class AssetCatalogTest {
   }
 
   @Test
+  fun `the ONNX Runtime release is addressed by its GitHub API URL`() {
+    assertEquals(
+        "https://api.github.com/repos/VOICEVOX/onnxruntime-builder/releases/tags/voicevox_onnxruntime-1.23.2",
+        catalog.onnxRuntimeReleaseApiUrl,
+    )
+  }
+
+  @Test
+  fun `ONNX Runtime rows of different releases are rejected`() {
+    val assets =
+        resourceLines("assets.tsv").map {
+          if ("android-x64" in it) it.replaceFirst("onnxruntime-1.23.2\t", "onnxruntime-1.23.3\t")
+          else it
+        }
+
+    assertFailsWith<IllegalArgumentException> { parse(assets, resourceLines("voices.tsv")) }
+  }
+
+  @Test
   fun `asset rows without ONNX Runtime still give every other entry`() {
     val assets = resourceLines("assets.tsv").filterNot { "onnxruntime" in it }
 
     val withoutOnnxRuntime = parse(assets, resourceLines("voices.tsv"))
 
     assertEquals(emptyMap(), withoutOnnxRuntime.onnxRuntimeArchives)
+    assertNull(withoutOnnxRuntime.onnxRuntimeReleaseApiUrl)
     assertEquals(catalog.dictionaryArchive, withoutOnnxRuntime.dictionaryArchive)
     assertEquals(catalog.terms, withoutOnnxRuntime.terms)
     assertEquals(catalog.voiceModels, withoutOnnxRuntime.voiceModels)
