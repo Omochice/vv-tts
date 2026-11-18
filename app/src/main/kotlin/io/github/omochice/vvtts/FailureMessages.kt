@@ -1,6 +1,9 @@
 package io.github.omochice.vvtts
 
-/** Returns the string resource that tells the user what to do about this failure. */
+/**
+ * Returns the string resource that tells the user what failed, with an action where one is not
+ * obvious.
+ */
 internal fun FailureReason.messageRes(): Int =
     when (this) {
       FailureReason.TRANSFER -> R.string.failure_transfer

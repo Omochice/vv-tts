@@ -35,7 +35,7 @@ internal class InstallNotifications(private val context: Context) {
           .setAutoCancel(true)
           .build()
 
-  /** Shows that the download failed for [reason], with what the user can do about it. */
+  /** Shows that the download failed and what failed, for [reason]. */
   fun failed(reason: FailureReason): Notification {
     val message = context.getString(reason.messageRes())
     return builder()
