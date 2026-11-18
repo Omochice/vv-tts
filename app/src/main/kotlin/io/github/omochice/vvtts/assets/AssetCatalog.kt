@@ -16,15 +16,12 @@ data class VoiceModel(val file: RemoteFile, val voices: List<Voice>)
  * @property voiceModels the talk voice models, ordered by the number in their file names.
  * @property onnxRuntimeArchives the gzipped tar of the ONNX Runtime library for each Android ABI
  *   name, such as `arm64-v8a`; empty when the asset table lists none.
- * @property onnxRuntimeReleaseApiUrl the GitHub API URL of the release the ONNX Runtime archives
- *   come from, whose notes carry their terms; null when the asset table lists none.
  */
 class AssetCatalog(
     val dictionaryArchive: RemoteFile,
     val terms: List<RemoteFile>,
     val voiceModels: List<VoiceModel>,
     val onnxRuntimeArchives: Map<String, RemoteFile>,
-    val onnxRuntimeReleaseApiUrl: String?,
 ) {
   companion object {
     /**
@@ -72,6 +69,9 @@ class AssetCatalog(
       val dictionaries = entries.filterIsInstance<Entry.Dictionary>()
       require(dictionaries.size == 1) { "expected one dictionary, found ${dictionaries.size}" }
       val onnxRuntimes = entries.filterIsInstance<Entry.OnnxRuntime>()
+      // Several releases stay rejected although no URL is derived from the release any more,
+      // because
+      // the bundled ONNX Runtime terms are those of a single release.
       val onnxRuntimeReleases = onnxRuntimes.map { it.release }.distinct()
       require(onnxRuntimeReleases.size <= 1) {
         "expected one ONNX Runtime release, found $onnxRuntimeReleases"
@@ -87,7 +87,6 @@ class AssetCatalog(
                   .sortedBy { it.fileName.removeSuffix(".vvm").toInt() }
                   .map { VoiceModel(it, voicesByModel[it.fileName].orEmpty()) },
           onnxRuntimeArchives = onnxRuntimes.associate { it.abi to it.file },
-          onnxRuntimeReleaseApiUrl = onnxRuntimeReleases.singleOrNull()?.let(::releaseApiUrl),
       )
     }
 
@@ -130,16 +129,6 @@ class AssetCatalog(
         }
         else -> throw IllegalArgumentException("$name of $release is of no known kind")
       }
-    }
-
-    /**
-     * Fixes the owner rather than parsing it out of the download URLs, because the release column
-     * names only the repository and tag, and the ONNX Runtime builds are published by VOICEVOX
-     * alone.
-     */
-    private fun releaseApiUrl(release: String): String {
-      val (repository, tag) = release.split('/', limit = 2)
-      return "https://api.github.com/repos/VOICEVOX/$repository/releases/tags/$tag"
     }
 
     private fun resource(name: String): Reader =

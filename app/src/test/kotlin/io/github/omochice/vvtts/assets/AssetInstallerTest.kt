@@ -68,7 +68,6 @@ class AssetInstallerTest {
           terms = emptyList(),
           voiceModels = listOf(VoiceModel(voice, emptyList())),
           onnxRuntimeArchives = mapOf("arm64-v8a" to ortPin),
-          onnxRuntimeReleaseApiUrl = null,
       )
 
   private val layout

@@ -41,7 +41,6 @@ class TermsTest {
             terms = catalog.terms + unbundled,
             voiceModels = catalog.voiceModels,
             onnxRuntimeArchives = catalog.onnxRuntimeArchives,
-            onnxRuntimeReleaseApiUrl = catalog.onnxRuntimeReleaseApiUrl,
         )
 
     assertFailsWith<IllegalStateException> { Terms.load(withUnbundled) }
