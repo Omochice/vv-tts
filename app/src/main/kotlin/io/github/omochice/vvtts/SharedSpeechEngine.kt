@@ -27,6 +27,14 @@ internal object SharedSpeechEngine {
   fun <R> useEngine(context: Context, block: (SpeechEngine) -> R): R =
       engine.use({ create(context.applicationContext) }, block)
 
+  /**
+   * Runs [block] with the engine as a [WordPronouncer], as [useEngine] does.
+   *
+   * @throws Exception whatever creating the engine or [block] throws.
+   */
+  fun <R> usePronouncer(context: Context, block: (WordPronouncer) -> R): R =
+      engine.use({ create(context.applicationContext) }, block)
+
   private fun create(context: Context) =
       VoicevoxSpeechEngine(
           AssetLayout(context.filesDir),
