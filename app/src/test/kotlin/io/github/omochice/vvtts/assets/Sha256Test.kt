@@ -20,6 +20,14 @@ class Sha256Test {
   }
 
   @Test
+  fun `the digest of bytes is their SHA-256 in lowercase hex`() {
+    assertEquals(
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+        sha256Hex("abc".toByteArray()),
+    )
+  }
+
+  @Test
   fun `a file spanning many read buffers digests the same as its whole content`() {
     val content = ByteArray(300_001) { (it * 31).toByte() }
     val file = tmp.newFile().apply { writeBytes(content) }
