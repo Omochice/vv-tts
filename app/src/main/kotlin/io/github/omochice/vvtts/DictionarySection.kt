@@ -29,14 +29,12 @@ internal class DictionarySection(
   private val rows = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
   private val status = TextView(activity)
 
-  /** The view holding the heading, the note, the words and the add button. */
+  /** The view holding the heading, the note, the add button and the words. */
   val view: View =
       LinearLayout(activity).apply {
         orientation = LinearLayout.VERTICAL
         addView(activity.headingView(activity.getString(R.string.dictionary_heading)))
         addView(TextView(activity).apply { setText(R.string.dictionary_note) })
-        addView(status)
-        addView(rows)
         addView(
             Button(activity).apply {
               setText(R.string.button_add)
@@ -48,6 +46,8 @@ internal class DictionarySection(
                 )
                 .apply { gravity = Gravity.END },
         )
+        addView(status)
+        addView(rows)
       }
 
   /** Shows the words as currently stored. */
