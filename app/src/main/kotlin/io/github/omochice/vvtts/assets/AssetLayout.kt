@@ -16,11 +16,18 @@ class AssetLayout(root: File) {
   /** Returns where the voice model named [fileName], such as `0.vvm`, is installed. */
   fun voiceModel(fileName: String): File = File(voiceModelDir, fileName)
 
+  /** Tells whether the ONNX Runtime library is present. */
+  fun hasOnnxRuntime(): Boolean = onnxRuntimeLibrary.isFile
+
+  /** Tells whether the dictionary directory holds any file. */
+  fun hasDictionary(): Boolean = !dictionaryDir.list().isNullOrEmpty()
+
+  /** Tells whether the voice model named [fileName] is present. */
+  fun hasVoiceModel(fileName: String): Boolean = voiceModel(fileName).isFile
+
   /**
    * Tells whether everything needed to speak with the voice model [voiceModelFileName] is present.
    */
   fun isInstalled(voiceModelFileName: String): Boolean =
-      onnxRuntimeLibrary.isFile &&
-          !dictionaryDir.list().isNullOrEmpty() &&
-          voiceModel(voiceModelFileName).isFile
+      hasOnnxRuntime() && hasDictionary() && hasVoiceModel(voiceModelFileName)
 }
