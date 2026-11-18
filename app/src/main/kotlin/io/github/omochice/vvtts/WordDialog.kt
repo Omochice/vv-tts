@@ -16,7 +16,7 @@ import java.io.IOException
  *
  * The dialog stays open with a message while the input is invalid or [save] throws [IOException].
  */
-internal class AddWordDialog(
+internal class WordDialog(
     private val activity: Activity,
     private val save: (DictionaryEntry) -> Unit,
 ) {
