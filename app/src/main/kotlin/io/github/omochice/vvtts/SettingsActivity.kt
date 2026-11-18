@@ -192,7 +192,7 @@ class SettingsActivity : Activity() {
   private fun voiceModelName(fileName: String): String {
     val voices = catalog.voiceModels.find { it.file.fileName == fileName }?.voices.orEmpty()
     val characters = characterStylesOf(voices).joinToString("、") { it.character }
-    return getString(R.string.voice_model_name, characters.ifEmpty { fileName })
+    return characters.ifEmpty { fileName }
   }
 
   private fun requestNotificationsThenSchedule(voiceModelFileName: String) {
