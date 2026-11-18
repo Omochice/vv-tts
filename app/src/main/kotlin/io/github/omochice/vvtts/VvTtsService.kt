@@ -38,6 +38,12 @@ class VvTtsService : TextToSpeechService() {
     val text = request.charSequenceText?.toString().orEmpty()
     val chunks = splitter.split(text)
     logRequest(request, text, chunks)
+    speak(request, chunks, callback)
+    // Without done(), the framework never tells the client about an error raised before start().
+    callback.done()
+  }
+
+  private fun speak(request: SynthesisRequest, chunks: List<String>, callback: SynthesisCallback) {
     if (LanguageSupport.of(request.language, request.country) == LanguageSupport.NONE) {
       Log.w(TAG, "unsupported locale ${request.language}-${request.country}")
       callback.error()
@@ -45,7 +51,6 @@ class VvTtsService : TextToSpeechService() {
     }
     callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
     loop.run(chunks, CallbackSink(callback)) { stopRequested.get() }
-    callback.done()
   }
 
   private fun logRequest(request: SynthesisRequest, text: String, chunks: List<String>) {
