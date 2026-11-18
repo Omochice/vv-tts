@@ -83,7 +83,7 @@ internal class AccentPicker(
     chosen = stored
     render()
     val check = DictionaryEntry.readingOf(reading())
-    if (check is ReadingCheck.Valid) fetch(check.reading, openList = false)
+    if (check is ReadingCheck.Valid) fetch(check.reading, thenOpen = false)
   }
 
   /** Forgets the choice, which belongs to the reading before the change. */
@@ -107,13 +107,13 @@ internal class AccentPicker(
       is ReadingCheck.Invalid -> readingProblem(check.problem.messageRes())
       is ReadingCheck.Valid -> {
         val choices = known?.takeIf { it.reading == check.reading }?.choices
-        if (choices == null) fetch(check.reading, openList = true)
+        if (choices == null) fetch(check.reading, thenOpen = true)
         else openList(check.reading, choices)
       }
     }
   }
 
-  private fun fetch(reading: String, openList: Boolean) {
+  private fun fetch(reading: String, thenOpen: Boolean) {
     val voice = voice ?: return
     val token = ++generation
     setBusy(true)
@@ -121,13 +121,13 @@ internal class AccentPicker(
       if (token != generation) return@run
       setBusy(false)
       val choices = result.getOrElse {
-        if (openList) note.setText(R.string.accent_engine_failed)
+        if (thenOpen) note.setText(R.string.accent_engine_failed)
         return@run
       }
       known = choices?.let { Known(reading, it) }
       render()
       when {
-        !openList -> Unit
+        !thenOpen -> Unit
         choices == null -> note.setText(R.string.accent_unavailable)
         else -> openList(reading, choices)
       }
