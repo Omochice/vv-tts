@@ -29,7 +29,8 @@ class VvTtsService : TextToSpeechService() {
   private val stopRequested = AtomicBoolean(false)
 
   override fun onIsLanguageAvailable(lang: String?, country: String?, variant: String?): Int =
-      LanguageSupport.of(lang, country).toTtsResult()
+      LanguageSupport.of(lang, country)
+          .ttsResult(isAnyVoiceInstalled = currentVoices().isNotEmpty())
 
   override fun onLoadLanguage(lang: String?, country: String?, variant: String?): Int =
       onIsLanguageAvailable(lang, country, variant)
@@ -147,10 +148,3 @@ class VvTtsService : TextToSpeechService() {
         callback.audioAvailable(pcm, offset, length) == TextToSpeech.SUCCESS
   }
 }
-
-private fun LanguageSupport.toTtsResult(): Int =
-    when (this) {
-      LanguageSupport.LANGUAGE_AND_COUNTRY -> TextToSpeech.LANG_COUNTRY_AVAILABLE
-      LanguageSupport.LANGUAGE -> TextToSpeech.LANG_AVAILABLE
-      LanguageSupport.NONE -> TextToSpeech.LANG_NOT_SUPPORTED
-    }
