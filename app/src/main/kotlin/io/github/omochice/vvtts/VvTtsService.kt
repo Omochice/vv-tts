@@ -66,7 +66,13 @@ class VvTtsService : TextToSpeechService() {
         }
     callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
     try {
-      loop.run(chunks, CallbackSink(callback)) { stopRequested.get() }
+      loop.run(
+          chunks,
+          Prosody.fromAndroid(request.speechRate, request.pitch),
+          CallbackSink(callback),
+      ) {
+        stopRequested.get()
+      }
     } catch (e: Exception) {
       Log.e(TAG, "synthesis failed", e)
       callback.error(TextToSpeech.ERROR_SYNTHESIS)

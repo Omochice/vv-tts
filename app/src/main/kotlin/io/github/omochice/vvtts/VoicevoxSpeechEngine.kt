@@ -38,7 +38,7 @@ class VoicevoxSpeechEngine(
     }
   }
 
-  override fun synthesize(chunk: String): ByteArray {
+  override fun synthesize(chunk: String, prosody: Prosody): ByteArray {
     val query =
         try {
           synthesizer.createAudioQuery(chunk, styleId)
@@ -47,6 +47,8 @@ class VoicevoxSpeechEngine(
         }
     query.outputSamplingRate = SpeechEngine.SAMPLE_RATE_HZ
     query.outputStereo = false
+    query.speedScale = prosody.speedScale
+    query.pitchScale = prosody.pitchScale
     return pcmFromWav(synthesizer.synthesis(query, styleId).perform())
   }
 }
