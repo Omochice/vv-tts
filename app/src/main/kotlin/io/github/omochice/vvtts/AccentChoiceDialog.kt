@@ -32,7 +32,7 @@ internal class AccentChoiceDialog(
             (1..choices.moras.size).map { withFall(choices.moras, it) }
     var selected = preselected
     var listen: Button? = null
-    dialog?.dismiss()
+    close()
     val shown =
         AlertDialog.Builder(activity)
             .setTitle(R.string.accent_choose_title)
@@ -56,6 +56,8 @@ internal class AccentChoiceDialog(
 
   /** Dismisses the dialog if it is showing, which stops its sound. */
   fun close() {
+    // Silenced here as well as from the dismiss listener, which Android runs a message later.
+    silence()
     dialog?.dismiss()
   }
 
@@ -66,7 +68,7 @@ internal class AccentChoiceDialog(
     button.isEnabled = false
     button.setText(R.string.button_preparing)
     pronouncer.run({ it.speak(reading, accent, voice) }) { result ->
-      if (token != generation) return@run
+      if (token != generation || dialog?.isShowing != true) return@run
       setIdle(button)
       result.fold(::play) { report() }
     }
