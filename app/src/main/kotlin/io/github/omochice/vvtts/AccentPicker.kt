@@ -24,7 +24,7 @@ internal class AccentPicker(
     private val readingProblem: (Int) -> Unit,
 ) {
   private val voice = pronouncer.voice()
-  private val list = AccentChoiceDialog(activity)
+  private val list = AccentChoiceDialog(activity, pronouncer)
 
   /** Null while the user has not chosen, which is stored as flat. */
   private var chosen: Int? = null
@@ -107,7 +107,8 @@ internal class AccentPicker(
       is ReadingCheck.Invalid -> readingProblem(check.problem.messageRes())
       is ReadingCheck.Valid -> {
         val choices = known?.takeIf { it.reading == check.reading }?.choices
-        if (choices == null) fetch(check.reading, openList = true) else openList(choices)
+        if (choices == null) fetch(check.reading, openList = true)
+        else openList(check.reading, choices)
       }
     }
   }
@@ -128,14 +129,14 @@ internal class AccentPicker(
       when {
         !openList -> Unit
         choices == null -> note.setText(R.string.accent_unavailable)
-        else -> openList(choices)
+        else -> openList(reading, choices)
       }
     }
   }
 
-  private fun openList(choices: AccentChoices) {
+  private fun openList(reading: String, choices: AccentChoices) {
     val current = chosen?.takeIf { it <= choices.moras.size }
-    list.show(choices, current ?: choices.suggested) {
+    list.show(reading, choices, current ?: choices.suggested) {
       chosen = it
       render()
     }
