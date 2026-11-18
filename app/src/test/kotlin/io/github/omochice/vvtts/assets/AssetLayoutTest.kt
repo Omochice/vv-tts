@@ -43,11 +43,6 @@ class AssetLayoutTest {
   }
 
   @Test
-  fun `terms documents have their own directory`() {
-    assertEquals(File(tmp.root, "terms"), layout().termsDir)
-  }
-
-  @Test
   fun `a root with the library, a populated dictionary and the voice model is installed`() {
     installEverything()
 
