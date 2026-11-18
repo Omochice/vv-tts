@@ -2,9 +2,7 @@ package io.github.omochice.vvtts
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.pm.PackageManager
-import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter
@@ -19,9 +17,6 @@ import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetInstaller
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.assets.InstallResult
-import java.io.IOException
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -34,12 +29,10 @@ class SettingsActivity : Activity() {
   private val installer by lazy {
     AssetInstaller(catalog, layout, Build.SUPPORTED_ABIS.first())
   }
-  private val consent by lazy { ConsentStore(this) }
-  private val executor: ExecutorService = Executors.newSingleThreadExecutor()
 
   private lateinit var status: TextView
   private lateinit var downloadButton: Button
-  private var dialog: AlertDialog? = null
+  private lateinit var terms: TermsDialog
   private var jobPending = false
 
   private val renderPosted = AtomicBoolean(false)
@@ -59,6 +52,7 @@ class SettingsActivity : Activity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     status = TextView(this).apply { textSize = 16f }
+    terms = TermsDialog(this, catalog, layout, installer) { requestNotificationsThenSchedule() }
     downloadButton =
         Button(this).apply {
           setText(R.string.button_download)
@@ -67,7 +61,7 @@ class SettingsActivity : Activity() {
     val termsButton =
         Button(this).apply {
           setText(R.string.button_terms)
-          setOnClickListener { showTerms(forConsent = false) }
+          setOnClickListener { terms.show(forVoiceModel = null) }
         }
     val content =
         LinearLayout(this).apply {
@@ -107,8 +101,7 @@ class SettingsActivity : Activity() {
   }
 
   override fun onDestroy() {
-    dialog?.dismiss()
-    executor.shutdownNow()
+    terms.close()
     super.onDestroy()
   }
 
@@ -169,98 +162,7 @@ class SettingsActivity : Activity() {
       }
 
   private fun startDownload() {
-    val agreed =
-        catalog.onnxRuntimeReleaseApiUrl?.let {
-          consent.isGiven(consentFingerprint(catalog.terms, it))
-        }
-    if (agreed == true) requestNotificationsThenSchedule() else showTerms(forConsent = true)
-  }
-
-  private fun showTerms(forConsent: Boolean) {
-    val loading =
-        show(
-            AlertDialog.Builder(this)
-                .setTitle(R.string.terms_title)
-                .setMessage(R.string.terms_loading)
-                .setNegativeButton(R.string.terms_cancel, null)
-        )
-    executor.execute {
-      val loaded =
-          try {
-            Result.success(
-                TermsLoader(catalog, layout).load() to
-                    installer.bytesToDownload(DOWNLOADED_VOICE_MODEL_FILE_NAME)
-            )
-          } catch (e: IOException) {
-            Log.w(TAG, "cannot load the terms", e)
-            Result.failure(e)
-          }
-      runOnUiThread {
-        // Compared by identity, because a load the user cancelled must not fill the dialog of a
-        // later one.
-        if (isDestroyed || dialog !== loading || !loading.isShowing) return@runOnUiThread
-        loaded.fold(
-            { (terms, bytes) -> showLoadedTerms(terms, bytes.takeIf { forConsent }) },
-            { showTermsError(forConsent) },
-        )
-      }
-    }
-  }
-
-  /** Shows [terms], asking for consent to download [downloadBytes] unless it is null. */
-  private fun showLoadedTerms(terms: Terms, downloadBytes: Long?) {
-    val documents =
-        LinearLayout(this).apply {
-          orientation = LinearLayout.VERTICAL
-          val gap = dp(24)
-          setPadding(gap, dp(8), gap, 0)
-          if (downloadBytes != null) {
-            addView(
-                body(
-                    getString(
-                        R.string.terms_download_size,
-                        Formatter.formatShortFileSize(this@SettingsActivity, downloadBytes),
-                    )
-                )
-            )
-          }
-          for (document in terms.voiceModelTerms) {
-            addView(heading(document.title))
-            addView(body(document.text))
-          }
-          addView(heading(getString(R.string.terms_onnx_runtime_heading)))
-          addView(body(terms.onnxRuntimeTerms))
-        }
-    val builder =
-        AlertDialog.Builder(this)
-            .setTitle(R.string.terms_title)
-            .setView(ScrollView(this).apply { addView(documents) })
-    if (downloadBytes == null) {
-      builder.setPositiveButton(R.string.terms_close, null)
-    } else {
-      builder
-          .setPositiveButton(R.string.terms_agree) { _, _ ->
-            consent.record(terms.fingerprint)
-            requestNotificationsThenSchedule()
-          }
-          .setNegativeButton(R.string.terms_cancel, null)
-    }
-    show(builder)
-  }
-
-  private fun showTermsError(forConsent: Boolean) {
-    show(
-        AlertDialog.Builder(this)
-            .setTitle(R.string.terms_title)
-            .setMessage(R.string.terms_error)
-            .setPositiveButton(R.string.terms_retry) { _, _ -> showTerms(forConsent) }
-            .setNegativeButton(R.string.terms_cancel, null)
-    )
-  }
-
-  private fun show(builder: AlertDialog.Builder): AlertDialog {
-    dialog?.dismiss()
-    return builder.show().also { dialog = it }
+    terms.requestConsent(DOWNLOADED_VOICE_MODEL_FILE_NAME)
   }
 
   private fun requestNotificationsThenSchedule() {
@@ -283,21 +185,6 @@ class SettingsActivity : Activity() {
     jobPending = AssetDownloadJobService.isPending(this)
     render()
   }
-
-  private fun heading(text: String) =
-      TextView(this).apply {
-        this.text = text
-        setTypeface(typeface, Typeface.BOLD)
-        setPadding(0, dp(16), 0, dp(4))
-      }
-
-  private fun body(text: String) =
-      TextView(this).apply {
-        this.text = text
-        setTextIsSelectable(true)
-      }
-
-  private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
   private companion object {
     const val REQUEST_NOTIFICATIONS = 1
