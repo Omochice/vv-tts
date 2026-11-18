@@ -61,18 +61,27 @@ class SentenceSplitter(private val maxBracketContentLength: Int) {
     for (i in text.indices) {
       if (text[i] in OPENERS) openers.addLast(i)
       val kind = CLOSERS.indexOf(text[i])
-      if (kind < 0) continue
-      // Searching below the top lets 「（」 still pair 「 with 」.
-      // Popping only the top would let the stray （ steal the 」 and leave 「 unclosed.
-      val depth = openers.indexOfLast { text[it] == OPENERS[kind] }
-      if (depth < 0) continue
-      val open = openers[depth]
-      while (openers.size > depth) openers.removeLast()
-      if (i - open - 1 <= maxBracketContentLength) {
-        for (j in open + 1 until i) sheltered[j] = true
-      }
+      if (kind >= 0) closeBracket(text, i, OPENERS[kind], openers, sheltered)
     }
     return sheltered
+  }
+
+  private fun closeBracket(
+      text: String,
+      close: Int,
+      opener: Char,
+      openers: ArrayDeque<Int>,
+      sheltered: BooleanArray,
+  ) {
+    // Searching below the top lets 「（」 still pair 「 with 」.
+    // Popping only the top would let the stray （ steal the 」 and leave 「 unclosed.
+    val depth = openers.indexOfLast { text[it] == opener }
+    if (depth < 0) return
+    val open = openers[depth]
+    while (openers.size > depth) openers.removeLast()
+    if (close - open - 1 <= maxBracketContentLength) {
+      for (j in open + 1 until close) sheltered[j] = true
+    }
   }
 
   private fun endOfTrailingRun(text: String, from: Int): Int {
