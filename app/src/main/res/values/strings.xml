@@ -32,6 +32,7 @@
     <string name="dictionary_read_failed">辞書を読み込めませんでした。</string>
     <string name="dictionary_save_failed">辞書に保存できませんでした。</string>
     <string name="dictionary_add_title">単語の追加</string>
+    <string name="dictionary_edit_title">単語の編集</string>
     <string name="dictionary_word">単語</string>
     <string name="dictionary_reading">読み</string>
     <string name="dictionary_error_empty_word">単語を入力してください。</string>
@@ -42,6 +43,7 @@
     <string name="dictionary_error_small_kana">読みの小さい字の並びを確かめてください。</string>
     <string name="dictionary_error_accent">アクセントを選び直してください。</string>
     <string name="button_add">追加</string>
+    <string name="button_save">保存</string>
     <string name="button_remove">削除</string>
     <string name="button_cancel">キャンセル</string>
 

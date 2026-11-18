@@ -1,6 +1,7 @@
 package io.github.omochice.vvtts
 
 import android.app.Activity
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -12,7 +13,7 @@ import io.github.omochice.vvtts.dictionary.UserDictionary
 import java.io.IOException
 
 /**
- * Lists the words of [dictionary] over [activity], and lets the user add and remove them.
+ * Lists the words of [dictionary] over [activity], and lets the user add, change and remove them.
  *
  * It talks to the stored dictionary only; the speech engine notices the change on its next
  * synthesis.
@@ -21,7 +22,7 @@ internal class DictionarySection(
     private val activity: Activity,
     private val dictionary: UserDictionary,
 ) {
-  private val addDialog =
+  private val wordDialog =
       WordDialog(activity) {
         dictionary.add(it)
         refresh()
@@ -38,7 +39,7 @@ internal class DictionarySection(
         addView(
             Button(activity).apply {
               setText(R.string.button_add)
-              setOnClickListener { addDialog.show() }
+              setOnClickListener { wordDialog.show() }
             },
             LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -64,9 +65,9 @@ internal class DictionarySection(
     entries.forEach { rows.addView(row(it)) }
   }
 
-  /** Dismisses the add dialog if it is showing. */
+  /** Dismisses the word dialog if it is showing. */
   fun close() {
-    addDialog.close()
+    wordDialog.close()
   }
 
   private fun show(message: Int) {
@@ -78,6 +79,8 @@ internal class DictionarySection(
       LinearLayout(activity).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
+        setBackgroundResource(selectableBackground())
+        setOnClickListener { wordDialog.show(entry) }
         addView(
             TextView(activity).apply {
               text = activity.getString(R.string.dictionary_entry, entry.word, entry.reading)
@@ -91,6 +94,12 @@ internal class DictionarySection(
             }
         )
       }
+
+  private fun selectableBackground(): Int {
+    val value = TypedValue()
+    activity.theme.resolveAttribute(android.R.attr.selectableItemBackground, value, true)
+    return value.resourceId
+  }
 
   private fun remove(entry: DictionaryEntry) {
     try {
