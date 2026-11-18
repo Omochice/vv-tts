@@ -40,6 +40,7 @@
     <string name="dictionary_error_empty_reading">読みを入力してください。</string>
     <string name="dictionary_error_not_kana">読みはひらがなかカタカナだけで書いてください。</string>
     <string name="dictionary_error_small_kana">読みの小さい字の並びを確かめてください。</string>
+    <string name="dictionary_error_accent">アクセントを選び直してください。</string>
     <string name="button_add">追加</string>
     <string name="button_remove">削除</string>
     <string name="button_cancel">キャンセル</string>

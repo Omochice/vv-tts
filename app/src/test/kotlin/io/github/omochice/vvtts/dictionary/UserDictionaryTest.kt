@@ -58,7 +58,7 @@ class UserDictionaryTest {
     dictionary().add(entry("nginx", "エンジンエックス"))
 
     assertEquals(listOf(entry("nginx", "エンジンエックス")), dictionary().entries())
-    assertEquals("nginx\tエンジンエックス\n", file().read())
+    assertEquals("nginx\tエンジンエックス\t0\n", file().read())
   }
 
   @Test

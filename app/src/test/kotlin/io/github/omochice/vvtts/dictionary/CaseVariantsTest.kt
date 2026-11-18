@@ -22,6 +22,13 @@ class CaseVariantsTest {
   }
 
   @Test
+  fun `every form keeps the accent of its entry`() {
+    val accented = (DictionaryEntry.of("nginx", "エンジンエックス", 5) as EntryCheck.Valid).entry
+
+    assertEquals(listOf(5, 5, 5), wordsOf(accented).map { it.accent })
+  }
+
+  @Test
   fun `a mixed-case word keeps its own form first and adds all three others`() {
     assertEquals(
         listOf("GitHub", "github", "GITHUB", "Github"),

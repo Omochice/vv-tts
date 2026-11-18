@@ -11,4 +11,5 @@ internal fun EntryProblem.messageRes(): Int =
       EntryProblem.EMPTY_READING -> R.string.dictionary_error_empty_reading
       EntryProblem.NOT_KANA_READING -> R.string.dictionary_error_not_kana
       EntryProblem.MISPLACED_SMALL_KANA -> R.string.dictionary_error_small_kana
+      EntryProblem.ACCENT_OUT_OF_RANGE -> R.string.dictionary_error_accent
     }

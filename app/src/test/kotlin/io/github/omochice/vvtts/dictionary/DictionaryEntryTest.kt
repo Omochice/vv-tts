@@ -10,6 +10,12 @@ class DictionaryEntryTest {
   private fun entryOf(word: String, reading: String): DictionaryEntry =
       (DictionaryEntry.of(word, reading) as EntryCheck.Valid).entry
 
+  private fun accentProblemOf(word: String, reading: String, accent: Int): EntryProblem? =
+      (DictionaryEntry.of(word, reading, accent) as? EntryCheck.Invalid)?.problem
+
+  private fun accentedEntryOf(word: String, reading: String, accent: Int): DictionaryEntry =
+      (DictionaryEntry.of(word, reading, accent) as EntryCheck.Valid).entry
+
   @Test
   fun `a word with a katakana reading is kept as given`() {
     val entry = entryOf("nginx", "エンジンエックス")
@@ -125,6 +131,34 @@ class DictionaryEntryTest {
     assertEquals("グヮン", entryOf("x", "グヮン").reading)
     assertEquals(EntryProblem.MISPLACED_SMALL_KANA, problemOf("x", "アヮ"))
     assertEquals(EntryProblem.MISPLACED_SMALL_KANA, problemOf("x", "ヮア"))
+  }
+
+  @Test
+  fun `an entry given no accent is flat`() {
+    assertEquals(0, entryOf("nginx", "エンジンエックス").accent)
+  }
+
+  @Test
+  fun `an accent up to the length of the reading is kept`() {
+    assertEquals(5, accentedEntryOf("nginx", "エンジンエックス", 5).accent)
+    assertEquals(8, accentedEntryOf("nginx", "エンジンエックス", 8).accent)
+  }
+
+  @Test
+  fun `a negative accent or one beyond the length of the reading is rejected`() {
+    assertEquals(EntryProblem.ACCENT_OUT_OF_RANGE, accentProblemOf("nginx", "エンジンエックス", -1))
+    assertEquals(EntryProblem.ACCENT_OUT_OF_RANGE, accentProblemOf("nginx", "エンジンエックス", 9))
+  }
+
+  @Test
+  fun `the accent is bounded by the reading in katakana, after trimming`() {
+    assertEquals(3, accentedEntryOf("x", " てすと ", 3).accent)
+    assertEquals(EntryProblem.ACCENT_OUT_OF_RANGE, accentProblemOf("x", " てすと ", 4))
+  }
+
+  @Test
+  fun `the reading is checked before the accent`() {
+    assertEquals(EntryProblem.EMPTY_READING, accentProblemOf("x", "", 1))
   }
 
   @Test
