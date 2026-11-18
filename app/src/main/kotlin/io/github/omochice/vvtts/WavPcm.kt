@@ -8,6 +8,12 @@ private const val CHUNK_HEADER_BYTES = 8
 private const val FMT_MIN_BYTES = 16
 private const val FORMAT_PCM = 1
 private const val BITS_PER_SAMPLE = 16
+private const val FOURCC_BYTES = 4
+private const val WAVE_ID_OFFSET = 8
+private const val CHUNK_SIZE_OFFSET = 4
+private const val FMT_CHANNELS_OFFSET = 2
+private const val FMT_SAMPLE_RATE_OFFSET = 4
+private const val FMT_BITS_PER_SAMPLE_OFFSET = 14
 
 /** Thrown when bytes are not a WAV file holding audio in the format [SpeechEngine] promises. */
 class InvalidWavException(message: String) : Exception(message)
@@ -22,13 +28,13 @@ fun pcmFromWav(wav: ByteArray): ByteArray {
   val buffer = ByteBuffer.wrap(wav).order(ByteOrder.LITTLE_ENDIAN)
   if (wav.size < RIFF_HEADER_BYTES) throw InvalidWavException("shorter than a RIFF header")
   if (fourCc(wav, 0) != "RIFF") throw InvalidWavException("not a RIFF file")
-  if (fourCc(wav, 8) != "WAVE") throw InvalidWavException("not a WAVE file")
+  if (fourCc(wav, WAVE_ID_OFFSET) != "WAVE") throw InvalidWavException("not a WAVE file")
   var formatChecked = false
   var offset = RIFF_HEADER_BYTES
   while (offset < wav.size) {
     if (wav.size - offset < CHUNK_HEADER_BYTES) throw InvalidWavException("truncated chunk header")
     val id = fourCc(wav, offset)
-    val size = buffer.getInt(offset + 4).toLong() and 0xFFFF_FFFFL
+    val size = buffer.getInt(offset + CHUNK_SIZE_OFFSET).toUInt().toLong()
     val bodyStart = offset + CHUNK_HEADER_BYTES
     if (size > wav.size - bodyStart) throw InvalidWavException("truncated '$id' chunk")
     when (id) {
@@ -48,20 +54,35 @@ fun pcmFromWav(wav: ByteArray): ByteArray {
 
 private fun checkFormat(buffer: ByteBuffer, start: Int, size: Int) {
   if (size < FMT_MIN_BYTES) throw InvalidWavException("fmt chunk of $size bytes")
-  val formatTag = buffer.getShort(start).toInt() and 0xFFFF
-  val channels = buffer.getShort(start + 2).toInt() and 0xFFFF
-  val sampleRate = buffer.getInt(start + 4)
-  val bitsPerSample = buffer.getShort(start + 14).toInt() and 0xFFFF
-  if (
-      formatTag != FORMAT_PCM ||
-          channels != 1 ||
-          sampleRate != SpeechEngine.SAMPLE_RATE_HZ ||
-          bitsPerSample != BITS_PER_SAMPLE
-  ) {
+  val format =
+      WavFormat(
+          formatTag = buffer.getShort(start).toUShort().toInt(),
+          channels = buffer.getShort(start + FMT_CHANNELS_OFFSET).toUShort().toInt(),
+          sampleRate = buffer.getInt(start + FMT_SAMPLE_RATE_OFFSET),
+          bitsPerSample = buffer.getShort(start + FMT_BITS_PER_SAMPLE_OFFSET).toUShort().toInt(),
+      )
+  if (format != EXPECTED_FORMAT) {
     throw InvalidWavException(
-        "format $formatTag, $channels channels, $sampleRate Hz, $bitsPerSample bits"
+        "format ${format.formatTag}, ${format.channels} channels, ${format.sampleRate} Hz, " +
+            "${format.bitsPerSample} bits"
     )
   }
 }
 
-private fun fourCc(bytes: ByteArray, offset: Int) = String(bytes, offset, 4, Charsets.US_ASCII)
+private data class WavFormat(
+    val formatTag: Int,
+    val channels: Int,
+    val sampleRate: Int,
+    val bitsPerSample: Int,
+)
+
+private val EXPECTED_FORMAT =
+    WavFormat(
+        formatTag = FORMAT_PCM,
+        channels = 1,
+        sampleRate = SpeechEngine.SAMPLE_RATE_HZ,
+        bitsPerSample = BITS_PER_SAMPLE,
+    )
+
+private fun fourCc(bytes: ByteArray, offset: Int) =
+    String(bytes, offset, FOURCC_BYTES, Charsets.US_ASCII)
