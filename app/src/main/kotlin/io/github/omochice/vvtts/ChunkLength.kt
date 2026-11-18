@@ -8,8 +8,9 @@ package io.github.omochice.vvtts
 // They live here alone so tuning them later touches a single place.
 private const val PROVISIONAL_MAX_CHUNK_LENGTH_AT_NORMAL_SPEED = 80
 
-// Android puts no lower bound on the speech rate, and a cap that shrank with it would cut words
-// into a few characters each.
+// A Prosody from Prosody.fromAndroid never brings the cap below 40, because that bounds the speed.
+// The floor stays because a Prosody constructed directly has no such bound, and a cap that shrank
+// with its speed would cut words into a few characters each and, below 2, make limitLength throw.
 private const val PROVISIONAL_MIN_MAX_CHUNK_LENGTH = 20
 
 /**
