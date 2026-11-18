@@ -42,7 +42,7 @@ class SettingsStatusTest {
   fun `a failed run that the system will retry is pending`() {
     assertEquals(
         SettingsStatus.Pending,
-        settingsStatusOf(InstallState.Finished(transferFailed), isJobPending = true, false),
+        settingsStatusOf(InstallState.Finished("0.vvm", transferFailed), isJobPending = true, false),
     )
   }
 
@@ -50,7 +50,7 @@ class SettingsStatusTest {
   fun `a run that gave up retrying a broken-off transfer is failed`() {
     assertEquals(
         SettingsStatus.Failed(FailureReason.TRANSFER),
-        settingsStatusOf(InstallState.Finished(transferFailed), isJobPending = false, false),
+        settingsStatusOf(InstallState.Finished("0.vvm", transferFailed), isJobPending = false, false),
     )
   }
 
@@ -58,7 +58,7 @@ class SettingsStatusTest {
   fun `a run waiting to retry is retrying, whatever the system lists`() {
     assertEquals(
         SettingsStatus.Retrying(2, 5),
-        settingsStatusOf(InstallState.Retrying(2, 5), isJobPending = true, isInstalled = false),
+        settingsStatusOf(InstallState.Retrying("0.vvm", 2, 5), isJobPending = true, isInstalled = false),
     )
   }
 
@@ -66,7 +66,7 @@ class SettingsStatusTest {
   fun `a run without a known total is preparing`() {
     assertEquals(
         SettingsStatus.Preparing,
-        settingsStatusOf(InstallState.Running(0, 0), isJobPending = true, isInstalled = false),
+        settingsStatusOf(InstallState.Running("0.vvm", 0, 0), isJobPending = true, isInstalled = false),
     )
   }
 
@@ -74,7 +74,7 @@ class SettingsStatusTest {
   fun `a run with a known total is downloading`() {
     assertEquals(
         SettingsStatus.Downloading(10, 100),
-        settingsStatusOf(InstallState.Running(10, 100), isJobPending = true, isInstalled = false),
+        settingsStatusOf(InstallState.Running("0.vvm", 10, 100), isJobPending = true, isInstalled = false),
     )
   }
 
@@ -83,7 +83,7 @@ class SettingsStatusTest {
     assertEquals(
         SettingsStatus.Failed(FailureReason.CORRUPT),
         settingsStatusOf(
-            InstallState.Finished(InstallResult.DownloadFailed(file, DownloadResult.Corrupt)),
+            InstallState.Finished("0.vvm", InstallResult.DownloadFailed(file, DownloadResult.Corrupt)),
             isJobPending = false,
             isInstalled = false,
         ),
@@ -94,7 +94,7 @@ class SettingsStatusTest {
   fun `a stopped run that the system will not resume is stopped`() {
     assertEquals(
         SettingsStatus.Stopped,
-        settingsStatusOf(InstallState.Finished(InstallResult.Stopped), false, isInstalled = false),
+        settingsStatusOf(InstallState.Finished("0.vvm", InstallResult.Stopped), false, isInstalled = false),
     )
   }
 
@@ -103,7 +103,7 @@ class SettingsStatusTest {
     assertEquals(
         SettingsStatus.Installed,
         settingsStatusOf(
-            InstallState.Finished(InstallResult.NoOnnxRuntimeFor("mips")),
+            InstallState.Finished("0.vvm", InstallResult.NoOnnxRuntimeFor("mips")),
             isJobPending = false,
             isInstalled = true,
         ),
@@ -114,7 +114,7 @@ class SettingsStatusTest {
   fun `a completed run whose assets are gone is not installed`() {
     assertEquals(
         SettingsStatus.NotInstalled,
-        settingsStatusOf(InstallState.Finished(InstallResult.Installed), false, false),
+        settingsStatusOf(InstallState.Finished("0.vvm", InstallResult.Installed), false, false),
     )
   }
 

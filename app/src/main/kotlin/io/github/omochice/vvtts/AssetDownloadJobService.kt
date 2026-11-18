@@ -49,7 +49,7 @@ class AssetDownloadJobService : JobService() {
   }
 
   private fun download(params: JobParameters, stop: CountDownLatch) {
-    val run = state.startRun()
+    val run = state.startRun(DOWNLOADED_VOICE_MODEL_FILE_NAME)
     val isStopRequested = { stop.count == 0L }
     val installer =
         AssetInstaller(AssetCatalog.load(), AssetLayout(filesDir), Build.SUPPORTED_ABIS.first())
