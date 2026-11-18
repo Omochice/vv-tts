@@ -16,7 +16,7 @@ import jp.hiroshiba.voicevoxcore.exceptions.AnalyzeTextException
  * of a voice model loads that model and keeps it loaded; both are slow and may throw whatever
  * VOICEVOX CORE throws when an asset is missing or broken.
  *
- * Not thread-safe: the framework calls it from its single synthesis thread only.
+ * Not thread-safe: callers must not use one instance from two threads at once.
  *
  * @param tempDir a writable directory OpenJTalk can use for its temporary files.
  */
