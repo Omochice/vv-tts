@@ -8,15 +8,12 @@ import io.github.omochice.vvtts.SpeechEngine
 import io.github.omochice.vvtts.TAG
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.dictionary.DictionaryChanges
-import io.github.omochice.vvtts.dictionary.DictionaryEntry
 import io.github.omochice.vvtts.dictionary.wordsToRegister
 import io.github.omochice.vvtts.pcmFromWav
 import java.io.File
-import jp.hiroshiba.voicevoxcore.UserDictWord
 import jp.hiroshiba.voicevoxcore.blocking.Onnxruntime
 import jp.hiroshiba.voicevoxcore.blocking.OpenJtalk
 import jp.hiroshiba.voicevoxcore.blocking.Synthesizer
-import jp.hiroshiba.voicevoxcore.blocking.UserDict
 import jp.hiroshiba.voicevoxcore.blocking.VoiceModelFile
 import jp.hiroshiba.voicevoxcore.exceptions.AnalyzeTextException
 
@@ -92,10 +89,10 @@ class VoicevoxSpeechEngine(
           return
         }
     val words = wordsToRegister(entries)
-    val userDict = UserDict()
-    val failures = words.mapNotNull { addTo(userDict, it) }
+    val built = buildUserDict(words)
+    val failures = built.skippedBecause
     try {
-      openJtalk.useUserDict(userDict)
+      openJtalk.useUserDict(built.userDict)
       Log.i(
           TAG,
           "user dictionary entries=${entries.size} words=${words.size} " +
@@ -106,19 +103,4 @@ class VoicevoxSpeechEngine(
       Log.w(TAG, "cannot apply the user dictionary words=${words.size}: ${e.javaClass.name}")
     }
   }
-
-  /** Returns null when [entry] was added, otherwise the name of the exception that refused it. */
-  @Suppress("TooGenericExceptionCaught")
-  private fun addTo(userDict: UserDict, entry: DictionaryEntry): String? =
-      try {
-        // Not the default priority of 5, which was measured to leave a word the system dictionary
-        // knows, 今日, read キョー instead of the registered コンニチ, while 10 overrode it.
-        // A user registering a word means it should always be read this way.
-        // Accent type 0 is accepted for any reading, whereas a real accent has to be checked
-        // against VOICEVOX's mora rules, so accent input is left out for now.
-        userDict.addWord(UserDictWord(entry.word, entry.reading, 0).priority(10))
-        null
-      } catch (e: Exception) {
-        e.javaClass.simpleName
-      }
 }
