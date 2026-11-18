@@ -16,12 +16,15 @@ data class VoiceModel(val file: RemoteFile, val voices: List<Voice>)
  * @property voiceModels the talk voice models, ordered by the number in their file names.
  * @property onnxRuntimeArchives the gzipped tar of the ONNX Runtime library for each Android ABI
  *   name, such as `arm64-v8a`; empty when the asset table lists none.
+ * @property onnxRuntimeReleaseApiUrl the GitHub API URL of the release the ONNX Runtime archives
+ *   come from, whose notes carry their terms; null when the asset table lists none.
  */
 class AssetCatalog(
     val dictionaryArchive: RemoteFile,
     val terms: List<RemoteFile>,
     val voiceModels: List<VoiceModel>,
     val onnxRuntimeArchives: Map<String, RemoteFile>,
+    val onnxRuntimeReleaseApiUrl: String?,
 ) {
   companion object {
     /**
@@ -38,7 +41,8 @@ class AssetCatalog(
      * Builds a catalog from the tab-separated asset table and voice table, each with a header line.
      *
      * @throws IllegalArgumentException if a header or row is malformed, an asset row is of no known
-     *   kind, there is not exactly one dictionary, or a voice names a model absent from [assets].
+     *   kind, there is not exactly one dictionary, the ONNX Runtime rows span several releases, or
+     *   a voice names a model absent from [assets].
      */
     fun parse(assets: Reader, voices: Reader): AssetCatalog {
       val voicesByModel =
@@ -53,6 +57,11 @@ class AssetCatalog(
           }
       val dictionaries = entries.filterIsInstance<Entry.Dictionary>()
       require(dictionaries.size == 1) { "expected one dictionary, found ${dictionaries.size}" }
+      val onnxRuntimes = entries.filterIsInstance<Entry.OnnxRuntime>()
+      val onnxRuntimeReleases = onnxRuntimes.map { it.release }.distinct()
+      require(onnxRuntimeReleases.size <= 1) {
+        "expected one ONNX Runtime release, found $onnxRuntimeReleases"
+      }
       val models = entries.filterIsInstance<Entry.Model>().map { it.file }
       val orphans = voicesByModel.keys - models.map { it.fileName }.toSet()
       require(orphans.isEmpty()) { "voices name models missing from the asset rows: $orphans" }
@@ -63,8 +72,8 @@ class AssetCatalog(
               models
                   .sortedBy { it.fileName.removeSuffix(".vvm").toInt() }
                   .map { VoiceModel(it, voicesByModel[it.fileName].orEmpty()) },
-          onnxRuntimeArchives =
-              entries.filterIsInstance<Entry.OnnxRuntime>().associate { it.abi to it.file },
+          onnxRuntimeArchives = onnxRuntimes.associate { it.abi to it.file },
+          onnxRuntimeReleaseApiUrl = onnxRuntimeReleases.singleOrNull()?.let(::releaseApiUrl),
       )
     }
 
@@ -85,7 +94,7 @@ class AssetCatalog(
 
       data class Model(val file: RemoteFile) : Entry
 
-      data class OnnxRuntime(val abi: String, val file: RemoteFile) : Entry
+      data class OnnxRuntime(val release: String, val abi: String, val file: RemoteFile) : Entry
     }
 
     /**
@@ -101,10 +110,20 @@ class AssetCatalog(
         release.startsWith("onnxruntime-builder/") -> {
           val abi = ONNX_RUNTIME_ABIS.entries.find { (arch, _) -> "-android-$arch-" in name }
           requireNotNull(abi) { "no Android ABI for $name" }
-          Entry.OnnxRuntime(abi.value, file)
+          Entry.OnnxRuntime(release, abi.value, file)
         }
         else -> throw IllegalArgumentException("$name of $release is of no known kind")
       }
+    }
+
+    /**
+     * Fixes the owner rather than parsing it out of the download URLs, because the release column
+     * names only the repository and tag, and the ONNX Runtime builds are published by VOICEVOX
+     * alone.
+     */
+    private fun releaseApiUrl(release: String): String {
+      val (repository, tag) = release.split('/', limit = 2)
+      return "https://api.github.com/repos/VOICEVOX/$repository/releases/tags/$tag"
     }
 
     private fun resource(name: String): Reader =
