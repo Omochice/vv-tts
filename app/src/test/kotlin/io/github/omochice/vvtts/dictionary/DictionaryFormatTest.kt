@@ -4,14 +4,16 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DictionaryFormatTest {
-  private fun entry(word: String, reading: String) =
-      (DictionaryEntry.of(word, reading) as EntryCheck.Valid).entry
+  private fun entry(word: String, reading: String, accent: Int = 0) =
+      (DictionaryEntry.of(word, reading, accent) as EntryCheck.Valid).entry
 
   @Test
-  fun `each entry is one line of the word and the reading separated by a tab`() {
+  fun `each entry is one line of the word, the reading and the accent separated by tabs`() {
     assertEquals(
-        "nginx\tエンジンエックス\nnode.js\tノードジェイエス\n",
-        DictionaryFormat.encode(listOf(entry("nginx", "エンジンエックス"), entry("node.js", "ノードジェイエス"))),
+        "nginx\tエンジンエックス\t5\nnode.js\tノードジェイエス\t0\n",
+        DictionaryFormat.encode(
+            listOf(entry("nginx", "エンジンエックス", 5), entry("node.js", "ノードジェイエス"))
+        ),
     )
   }
 
@@ -22,7 +24,7 @@ class DictionaryFormatTest {
 
   @Test
   fun `encoded entries decode to the same entries`() {
-    val entries = listOf(entry("hello world", "ハローワールド"), entry("nginx", "エンジンエックス"))
+    val entries = listOf(entry("hello world", "ハローワールド"), entry("nginx", "エンジンエックス", 5))
 
     assertEquals(entries, DictionaryFormat.decode(DictionaryFormat.encode(entries)))
   }
@@ -46,8 +48,8 @@ class DictionaryFormatTest {
   }
 
   @Test
-  fun `a line without exactly one tab is dropped`() {
-    val text = "nginx エンジンエックス\nnginx\tエンジン\tエックス\nnode.js\tノードジェイエス\n"
+  fun `a line without a tab or with more than two is dropped`() {
+    val text = "nginx エンジンエックス\nnginx\tエンジン\t5\tエックス\nnode.js\tノードジェイエス\n"
 
     assertEquals(listOf("node.js"), DictionaryFormat.decode(text).map { it.word })
   }
@@ -60,6 +62,32 @@ class DictionaryFormatTest {
         listOf(entry("nginx", "エンジンエックス"), entry("node.js", "ノードジェイエス")),
         DictionaryFormat.decode(text),
     )
+  }
+
+  @Test
+  fun `a line of only the word and the reading, as files without accents have, is flat`() {
+    assertEquals(entry("nginx", "エンジンエックス"), DictionaryFormat.decode("nginx\tエンジンエックス\n").single())
+  }
+
+  @Test
+  fun `a line with an accent decodes to an entry with that accent`() {
+    assertEquals(5, DictionaryFormat.decode("nginx\tエンジンエックス\t5\n").single().accent)
+  }
+
+  @Test
+  fun `a carriage return after the accent is tolerated`() {
+    assertEquals(5, DictionaryFormat.decode("nginx\tエンジンエックス\t5\r\n").single().accent)
+  }
+
+  @Test
+  fun `a line whose accent is not plain digits or is out of range is dropped`() {
+    for (accent in listOf("", "x", "+3", "-1", " 3", "3 ", "１", "99999999999", "9")) {
+      assertEquals(
+          emptyList(),
+          DictionaryFormat.decode("nginx\tエンジンエックス\t$accent\n"),
+          accent,
+      )
+    }
   }
 
   @Test

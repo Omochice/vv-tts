@@ -9,18 +9,26 @@ import io.github.omochice.vvtts.text.isSentenceEnd
  *
  * @property word the text to match, trimmed.
  * @property reading the pronunciation in katakana.
+ * @property accent where the pitch falls: 0 for nowhere, n for after the n-th mora of [reading].
  */
 @ConsistentCopyVisibility
-data class DictionaryEntry internal constructor(val word: String, val reading: String) {
+data class DictionaryEntry
+internal constructor(val word: String, val reading: String, val accent: Int) {
   /** Validates user input. */
   companion object {
-    /** Checks [word] and [reading], accepting a reading in hiragana or katakana. */
-    fun of(word: String, reading: String): EntryCheck {
+    /**
+     * Checks [word], [reading] and [accent], accepting a reading in hiragana or katakana.
+     *
+     * The accent is only bounded by the length of the reading, which is at least its number of
+     * moras; VOICEVOX may still refuse an accent within that bound.
+     */
+    fun of(word: String, reading: String, accent: Int = 0): EntryCheck {
       val trimmedWord = word.trim()
       val katakana = toKatakana(reading.trim())
-      val problem = wordProblem(trimmedWord) ?: readingProblem(katakana)
+      val problem =
+          wordProblem(trimmedWord) ?: readingProblem(katakana) ?: accentProblem(katakana, accent)
       return if (problem == null) {
-        EntryCheck.Valid(DictionaryEntry(trimmedWord, katakana))
+        EntryCheck.Valid(DictionaryEntry(trimmedWord, katakana, accent))
       } else {
         EntryCheck.Invalid(problem)
       }
@@ -48,6 +56,11 @@ private fun isUnusable(text: String, index: Int): Boolean {
     else -> false
   }
 }
+
+// The exact bound is the number of moras by VOICEVOX's own rule, which only VOICEVOX can tell, so
+// the engine registers a word flat when it refuses the accent rather than this check guessing.
+private fun accentProblem(reading: String, accent: Int): EntryProblem? =
+    if (accent in 0..reading.length) null else EntryProblem.ACCENT_OUT_OF_RANGE
 
 private fun readingProblem(reading: String): EntryProblem? =
     when {
@@ -116,4 +129,7 @@ enum class EntryProblem {
 
   /** The reading has small kana in a sequence VOICEVOX rejects. */
   MISPLACED_SMALL_KANA,
+
+  /** The accent is negative or beyond the length of the reading. */
+  ACCENT_OUT_OF_RANGE,
 }
