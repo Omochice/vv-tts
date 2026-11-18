@@ -117,6 +117,7 @@ internal class AccentPicker(
     val voice = voice ?: return
     val token = ++generation
     setBusy(true)
+    if (thenOpen) note.setText(R.string.accent_note)
     pronouncer.run({ it.accentChoices(reading, voice) }) { result ->
       if (token != generation) return@run
       setBusy(false)
