@@ -9,6 +9,8 @@ import android.speech.tts.Voice
 import android.util.Log
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
+import io.github.omochice.vvtts.dictionary.DictionaryChanges
+import io.github.omochice.vvtts.dictionary.UserDictionaryFile
 import io.github.omochice.vvtts.text.RubyNormalizer
 import io.github.omochice.vvtts.text.SentenceSplitter
 import io.github.omochice.vvtts.text.limitLength
@@ -105,7 +107,7 @@ class VvTtsService : TextToSpeechService() {
     }
     var engineStarted = false
     try {
-      sharedLoop.use({ SynthesisLoop(VoicevoxSpeechEngine(layout, cacheDir)) }) { loop ->
+      sharedLoop.use(::newLoop) { loop ->
         engineStarted = true
         // The framework can stop a request before onSynthesizeText runs.
         val started = callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
@@ -117,6 +119,11 @@ class VvTtsService : TextToSpeechService() {
       callback.error(TextToSpeech.ERROR_SYNTHESIS)
     }
   }
+
+  private fun newLoop() =
+      SynthesisLoop(
+          VoicevoxSpeechEngine(layout, cacheDir, DictionaryChanges(UserDictionaryFile(filesDir)))
+      )
 
   private fun logRequest(
       request: SynthesisRequest,
