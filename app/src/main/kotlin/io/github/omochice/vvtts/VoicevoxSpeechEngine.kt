@@ -10,21 +10,19 @@ import jp.hiroshiba.voicevoxcore.blocking.VoiceModelFile
 import jp.hiroshiba.voicevoxcore.exceptions.AnalyzeTextException
 
 /**
- * Speaks with one VOICEVOX style, using the assets installed in [layout].
+ * Speaks with the VOICEVOX styles of the voice models installed in [layout].
  *
- * Construction loads the native runtime, the dictionary and the voice model, so it is slow and may
- * throw whatever VOICEVOX CORE throws when an asset is missing or broken.
+ * Construction loads the native runtime and the dictionary, and the first [synthesize] with a voice
+ * of a voice model loads that model and keeps it loaded; both are slow and may throw whatever
+ * VOICEVOX CORE throws when an asset is missing or broken.
  *
- * @param voiceModelFileName the installed voice model that contains [styleId], such as `0.vvm`.
+ * Not thread-safe: the framework calls it from its single synthesis thread only.
+ *
  * @param tempDir a writable directory OpenJTalk can use for its temporary files.
  */
-class VoicevoxSpeechEngine(
-    layout: AssetLayout,
-    voiceModelFileName: String,
-    private val styleId: Int,
-    tempDir: File,
-) : SpeechEngine {
+class VoicevoxSpeechEngine(private val layout: AssetLayout, tempDir: File) : SpeechEngine {
   private val synthesizer: Synthesizer
+  private val loadedVoiceModels = mutableSetOf<String>()
 
   init {
     // OpenJTalk creates temporary files under TMPDIR, which Android leaves unset.
@@ -33,15 +31,13 @@ class VoicevoxSpeechEngine(
         Onnxruntime.loadOnce().filename(layout.onnxRuntimeLibrary.absolutePath).perform()
     synthesizer =
         Synthesizer.builder(onnxRuntime, OpenJtalk(layout.dictionaryDir.absolutePath)).build()
-    VoiceModelFile(layout.voiceModel(voiceModelFileName).absolutePath).use {
-      synthesizer.loadVoiceModel(it).perform()
-    }
   }
 
-  override fun synthesize(chunk: String, prosody: Prosody): ByteArray {
+  override fun synthesize(chunk: String, voice: SpeakableVoice, prosody: Prosody): ByteArray {
+    loadVoiceModelOf(voice)
     val query =
         try {
-          synthesizer.createAudioQuery(chunk, styleId)
+          synthesizer.createAudioQuery(chunk, voice.styleId)
         } catch (_: AnalyzeTextException) {
           return ByteArray(0)
         }
@@ -49,6 +45,15 @@ class VoicevoxSpeechEngine(
     query.outputStereo = false
     query.speedScale = prosody.speedScale
     query.pitchScale = prosody.pitchScale
-    return pcmFromWav(synthesizer.synthesis(query, styleId).perform())
+    return pcmFromWav(synthesizer.synthesis(query, voice.styleId).perform())
+  }
+
+  private fun loadVoiceModelOf(voice: SpeakableVoice) {
+    val fileName = voice.voiceModelFileName
+    if (fileName in loadedVoiceModels) return
+    VoiceModelFile(layout.voiceModel(fileName).absolutePath).use {
+      synthesizer.loadVoiceModel(it).perform()
+    }
+    loadedVoiceModels += fileName
   }
 }

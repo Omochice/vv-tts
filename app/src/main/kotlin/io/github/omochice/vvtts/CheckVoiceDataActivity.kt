@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
 
 /**
@@ -15,7 +16,8 @@ class CheckVoiceDataActivity : Activity() {
     // Settings compares "jpn-JPN" verbatim against the default locale, so the
     // ISO 639-2/3166 alpha-3 spelling is required rather than a BCP 47 tag.
     val voices = arrayListOf("jpn", "jpn-JPN")
-    val installed = AssetLayout(filesDir).isInstalled(PROVISIONAL_VOICE_MODEL_FILE_NAME)
+    val installed =
+        installedVoices(AssetCatalog.load().voiceModels, AssetLayout(filesDir)).isNotEmpty()
     setResult(
         if (installed) TextToSpeech.Engine.CHECK_VOICE_DATA_PASS
         else TextToSpeech.Engine.CHECK_VOICE_DATA_FAIL,
