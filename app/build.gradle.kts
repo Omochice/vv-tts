@@ -1,5 +1,6 @@
 plugins {
   alias(libs.plugins.android.application)
+  alias(libs.plugins.detekt)
 }
 
 android {
@@ -26,4 +27,9 @@ dependencies {
 
   testImplementation(libs.junit)
   testImplementation(libs.kotlin.test.junit)
+}
+
+detekt {
+  buildUponDefaultConfig = true
+  config.setFrom(rootProject.file("config/detekt/detekt.yaml"))
 }

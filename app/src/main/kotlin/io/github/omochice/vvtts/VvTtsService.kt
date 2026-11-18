@@ -80,6 +80,9 @@ class VvTtsService : TextToSpeechService() {
 
   private fun currentVoices(): List<SpeakableVoice> = installedVoices(catalog.voiceModels, layout)
 
+  // Narrower catches would let an exception type nobody listed end the service instead of reaching
+  // the client as a synthesis error, and VOICEVOX CORE fails with several unrelated types.
+  @Suppress("TooGenericExceptionCaught")
   private fun speak(
       request: SynthesisRequest,
       voice: SpeakableVoice?,

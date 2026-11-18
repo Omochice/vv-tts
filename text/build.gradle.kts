@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.detekt)
 }
 
 // The target is set directly instead of through jvmToolchain.
@@ -23,4 +24,9 @@ dependencies {
 
 tasks.test {
   useJUnitPlatform()
+}
+
+detekt {
+  buildUponDefaultConfig = true
+  config.setFrom(rootProject.file("config/detekt/detekt.yaml"))
 }
