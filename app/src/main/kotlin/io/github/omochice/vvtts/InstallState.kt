@@ -11,19 +11,25 @@ sealed interface InstallState {
   /**
    * A download is under way.
    *
+   * @property voiceModelFileName the voice model the run installs, such as `0.vvm`.
    * @property doneBytes the bytes downloaded so far by this run.
    * @property totalBytes the bytes this run has to download; 0 until it is known.
    */
-  data class Running(val doneBytes: Long, val totalBytes: Long) : InstallState
+  data class Running(
+      val voiceModelFileName: String,
+      val doneBytes: Long,
+      val totalBytes: Long,
+  ) : InstallState
 
   /**
-   * A transfer broke off, and the run waits before attempt number [attempt] of [maxAttempts],
-   * counting from 1.
+   * A transfer broke off, and the run for [voiceModelFileName] waits before attempt number
+   * [attempt] of [maxAttempts], counting from 1.
    */
-  data class Retrying(val attempt: Int, val maxAttempts: Int) : InstallState
+  data class Retrying(val voiceModelFileName: String, val attempt: Int, val maxAttempts: Int) :
+      InstallState
 
-  /** The latest run ended with [result]. */
-  data class Finished(val result: InstallResult) : InstallState
+  /** The latest run, which was for [voiceModelFileName], ended with [result]. */
+  data class Finished(val voiceModelFileName: String, val result: InstallResult) : InstallState
 }
 
 /**
@@ -50,12 +56,15 @@ class InstallStateHolder {
     listeners -= listener
   }
 
-  /** Begins a run, which supersedes any earlier one, and reports it as running. */
-  fun startRun(): Run =
+  /**
+   * Begins a run that installs the voice model named [voiceModelFileName], which supersedes any
+   * earlier run, and reports it as running.
+   */
+  fun startRun(voiceModelFileName: String): Run =
       synchronized(this) {
-        Run().also {
+        Run(voiceModelFileName).also {
           latest = it
-          publish(InstallState.Running(0, 0))
+          publish(InstallState.Running(voiceModelFileName, 0, 0))
         }
       }
 
@@ -70,16 +79,17 @@ class InstallStateHolder {
   }
 
   /** One download run; once a later run has started, whatever it reports is ignored. */
-  inner class Run internal constructor() {
+  inner class Run internal constructor(private val voiceModelFileName: String) {
     /** Reports the bytes downloaded so far and the total, both in bytes. */
     fun progress(doneBytes: Long, totalBytes: Long) =
-        report(this, InstallState.Running(doneBytes, totalBytes))
+        report(this, InstallState.Running(voiceModelFileName, doneBytes, totalBytes))
 
     /** Reports that the run waits before attempt number [attempt] of [maxAttempts]. */
     fun retrying(attempt: Int, maxAttempts: Int) =
-        report(this, InstallState.Retrying(attempt, maxAttempts))
+        report(this, InstallState.Retrying(voiceModelFileName, attempt, maxAttempts))
 
     /** Reports how the run ended. */
-    fun finish(result: InstallResult) = report(this, InstallState.Finished(result))
+    fun finish(result: InstallResult) =
+        report(this, InstallState.Finished(voiceModelFileName, result))
   }
 }
