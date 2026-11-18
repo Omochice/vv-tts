@@ -6,6 +6,7 @@ import android.speech.tts.SynthesisRequest
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.util.Log
+import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.text.SentenceSplitter
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -18,7 +19,7 @@ private const val PROVISIONAL_MAX_BRACKET_CONTENT_LENGTH = 100
 /** The system text-to-speech engine that reads Japanese text aloud. */
 class VvTtsService : TextToSpeechService() {
   private val splitter = SentenceSplitter(PROVISIONAL_MAX_BRACKET_CONTENT_LENGTH)
-  private val loop = SynthesisLoop(ToneSpeechEngine())
+  private var loop: SynthesisLoop? = null
   private val stopRequested = AtomicBoolean(false)
 
   override fun onIsLanguageAvailable(lang: String?, country: String?, variant: String?): Int =
@@ -49,9 +50,40 @@ class VvTtsService : TextToSpeechService() {
       callback.error()
       return
     }
+    val layout = AssetLayout(filesDir)
+    if (!layout.isInstalled(PROVISIONAL_VOICE_MODEL_FILE_NAME)) {
+      Log.w(TAG, "speech assets are not installed")
+      callback.error(TextToSpeech.ERROR_NOT_INSTALLED_YET)
+      return
+    }
+    val loop =
+        try {
+          loopFor(layout)
+        } catch (e: Exception) {
+          Log.e(TAG, "cannot start the speech engine", e)
+          callback.error(TextToSpeech.ERROR_SYNTHESIS)
+          return
+        }
     callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
-    loop.run(chunks, CallbackSink(callback)) { stopRequested.get() }
+    try {
+      loop.run(chunks, CallbackSink(callback)) { stopRequested.get() }
+    } catch (e: Exception) {
+      Log.e(TAG, "synthesis failed", e)
+      callback.error(TextToSpeech.ERROR_SYNTHESIS)
+    }
   }
+
+  private fun loopFor(layout: AssetLayout): SynthesisLoop =
+      loop
+          ?: SynthesisLoop(
+                  VoicevoxSpeechEngine(
+                      layout,
+                      PROVISIONAL_VOICE_MODEL_FILE_NAME,
+                      PROVISIONAL_STYLE_ID,
+                      cacheDir,
+                  )
+              )
+              .also { loop = it }
 
   private fun logRequest(request: SynthesisRequest, text: String, chunks: List<String>) {
     Log.i(

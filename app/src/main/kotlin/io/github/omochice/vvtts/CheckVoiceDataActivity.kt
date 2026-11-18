@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import io.github.omochice.vvtts.assets.AssetLayout
 
 /**
  * Answers the framework's voice-data check so system Settings enables the engine's sample playback.
@@ -13,14 +14,20 @@ class CheckVoiceDataActivity : Activity() {
     super.onCreate(savedInstanceState)
     // Settings compares "jpn-JPN" verbatim against the default locale, so the
     // ISO 639-2/3166 alpha-3 spelling is required rather than a BCP 47 tag.
+    val voices = arrayListOf("jpn", "jpn-JPN")
+    val installed = AssetLayout(filesDir).isInstalled(PROVISIONAL_VOICE_MODEL_FILE_NAME)
     setResult(
-        TextToSpeech.Engine.CHECK_VOICE_DATA_PASS,
+        if (installed) TextToSpeech.Engine.CHECK_VOICE_DATA_PASS
+        else TextToSpeech.Engine.CHECK_VOICE_DATA_FAIL,
         Intent().apply {
           putStringArrayListExtra(
               TextToSpeech.Engine.EXTRA_AVAILABLE_VOICES,
-              arrayListOf("jpn", "jpn-JPN"),
+              if (installed) voices else arrayListOf(),
           )
-          putStringArrayListExtra(TextToSpeech.Engine.EXTRA_UNAVAILABLE_VOICES, arrayListOf())
+          putStringArrayListExtra(
+              TextToSpeech.Engine.EXTRA_UNAVAILABLE_VOICES,
+              if (installed) arrayListOf() else voices,
+          )
         },
     )
     finish()
