@@ -56,6 +56,7 @@ class VoicevoxSpeechEngine(
         } catch (_: AnalyzeTextException) {
           return ByteArray(0)
         }
+    if (Log.isLoggable(TAG, Log.VERBOSE)) Log.v(TAG, "kana=${query.kana}")
     query.outputSamplingRate = SpeechEngine.SAMPLE_RATE_HZ
     query.outputStereo = false
     query.speedScale = prosody.speedScale
