@@ -8,6 +8,7 @@ import kotlin.test.Test
 private const val APP = "io.github.omochice.vvtts"
 private const val ASSETS = "$APP.assets"
 private const val DICTIONARY = "$APP.dictionary"
+private const val VOICEVOX = "$APP.voicevox"
 private const val VOICEVOX_CORE = "jp.hiroshiba.voicevoxcore"
 
 class ImportBoundaryTest {
@@ -45,9 +46,13 @@ class ImportBoundaryTest {
   }
 
   @Test
-  fun `only the speech engine imports VOICEVOX CORE`() {
+  fun `only the voicevox package imports VOICEVOX CORE`() {
     production.files
-        .filter { it.name != "VoicevoxSpeechEngine" }
+        .filterNot {
+          it.packagee?.name.let { name ->
+            name == VOICEVOX || name?.startsWith("$VOICEVOX.") == true
+          }
+        }
         .assertFalse(strict = true) { file ->
           file.hasImport { it.name.startsWith("$VOICEVOX_CORE.") }
         }

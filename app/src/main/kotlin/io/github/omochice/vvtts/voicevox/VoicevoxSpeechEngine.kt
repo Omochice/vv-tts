@@ -1,11 +1,16 @@
-package io.github.omochice.vvtts
+package io.github.omochice.vvtts.voicevox
 
 import android.system.Os
 import android.util.Log
+import io.github.omochice.vvtts.Prosody
+import io.github.omochice.vvtts.SpeakableVoice
+import io.github.omochice.vvtts.SpeechEngine
+import io.github.omochice.vvtts.TAG
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.dictionary.DictionaryChanges
 import io.github.omochice.vvtts.dictionary.DictionaryEntry
 import io.github.omochice.vvtts.dictionary.wordsToRegister
+import io.github.omochice.vvtts.pcmFromWav
 import java.io.File
 import jp.hiroshiba.voicevoxcore.UserDictWord
 import jp.hiroshiba.voicevoxcore.blocking.Onnxruntime
