@@ -92,6 +92,30 @@ class AssetLayoutTest {
   }
 
   @Test
+  fun `the library and a populated dictionary are the base parts without any voice model`() {
+    installEverything()
+    layout().voiceModel("0.vvm").delete()
+
+    assertTrue(layout().hasBaseParts())
+  }
+
+  @Test
+  fun `a missing library means the base parts are incomplete`() {
+    installEverything()
+    layout().onnxRuntimeLibrary.delete()
+
+    assertFalse(layout().hasBaseParts())
+  }
+
+  @Test
+  fun `an empty dictionary directory means the base parts are incomplete`() {
+    installEverything()
+    File(layout().dictionaryDir, "sys.dic").delete()
+
+    assertFalse(layout().hasBaseParts())
+  }
+
+  @Test
   fun `a directory in place of the library does not count`() {
     installEverything()
     layout().onnxRuntimeLibrary.delete()
