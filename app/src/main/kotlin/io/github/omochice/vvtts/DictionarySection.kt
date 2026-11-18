@@ -22,7 +22,7 @@ internal class DictionarySection(
     private val dictionary: UserDictionary,
 ) {
   private val addDialog =
-      AddWordDialog(activity) {
+      WordDialog(activity) {
         dictionary.add(it)
         refresh()
       }
