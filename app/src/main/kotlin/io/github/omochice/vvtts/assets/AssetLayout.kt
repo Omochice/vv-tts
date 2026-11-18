@@ -5,11 +5,15 @@ import java.io.File
 /**
  * Where the installed speech assets live under [root].
  *
+ * @property onnxRuntimeDir the directory the ONNX Runtime archive is extracted into.
  * @property onnxRuntimeLibrary the ONNX Runtime shared library VOICEVOX CORE loads by path.
  * @property dictionaryDir the directory holding the OpenJTalk dictionary files directly.
+ * @property downloadsDir the directory holding archives while they are downloaded and unpacked.
  */
 class AssetLayout(root: File) {
-  val onnxRuntimeLibrary = File(root, "ort/lib/libvoicevox_onnxruntime.so")
+  val onnxRuntimeDir = File(root, "ort")
+  val onnxRuntimeLibrary = File(onnxRuntimeDir, "lib/libvoicevox_onnxruntime.so")
+  val downloadsDir = File(root, "downloads")
   val dictionaryDir = File(root, "dict")
   private val voiceModelDir = File(root, "vvm")
 
