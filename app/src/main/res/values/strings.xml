@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">vv-ttsの設定</string>
+
+    <string name="status_installed">音声データはインストール済みです。</string>
+    <string name="status_not_installed">音声データがまだインストールされていません。</string>
+    <string name="status_pending">ダウンロードの開始を待っています。ネットワークにつながると始まります。</string>
+    <string name="status_preparing">ダウンロードを準備しています。</string>
+    <string name="status_running">ダウンロード中です（%1$d%%、%2$s／%3$s）。</string>
+    <string name="status_retrying">通信が途切れたため、まもなくもう一度試します（%1$d/%2$d回目）。</string>
+    <string name="status_stopped">ダウンロードが中断されました。</string>
+
+    <string name="failure_transfer">ダウンロードが途中で止まりました。ネットワークへの接続と端末の空き容量を確かめてから、もう一度お試しください。</string>
+    <string name="failure_server">配布元からファイルを受け取れませんでした。時間をおいてから、もう一度お試しください。</string>
+    <string name="failure_corrupt">受け取ったファイルが正しくありませんでした。もう一度お試しください。何度も続く場合はアプリの更新が必要です。</string>
+    <string name="failure_storage">受け取ったファイルを保存できませんでした。端末の空き容量を確かめてから、もう一度お試しください。</string>
+    <string name="failure_unsupported_device">この端末のCPUには対応していません。</string>
+
+    <string name="button_download">音声データをダウンロード</string>
+    <string name="button_terms">利用規約とクレジットを表示</string>
+    <string name="schedule_failed">ダウンロードを始められませんでした。</string>
+
+    <string name="terms_title">利用規約</string>
+    <string name="terms_loading">利用規約を取得しています…</string>
+    <string name="terms_error">利用規約を取得できませんでした。ネットワークへの接続を確かめてください。</string>
+    <string name="terms_download_size">ダウンロードするデータの合計：%s</string>
+    <string name="terms_onnx_runtime_heading">VOICEVOX ONNX Runtime</string>
+    <string name="terms_agree">同意してダウンロード</string>
+    <string name="terms_retry">再試行</string>
+    <string name="terms_cancel">キャンセル</string>
+    <string name="terms_close">閉じる</string>
+
+    <string name="notification_channel">音声データのダウンロード</string>
+    <string name="notification_running">音声データをダウンロードしています</string>
+    <string name="notification_done">音声データのダウンロードが完了しました</string>
+    <string name="notification_failed">音声データのダウンロードに失敗しました</string>
+</resources>
