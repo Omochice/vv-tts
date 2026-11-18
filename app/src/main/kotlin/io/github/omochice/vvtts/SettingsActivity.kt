@@ -143,7 +143,7 @@ class SettingsActivity : Activity() {
         settingsStatusOf(
             AssetDownloadJobService.state.current,
             jobPending,
-            layout.isInstalled(PROVISIONAL_VOICE_MODEL_FILE_NAME),
+            installedVoices(catalog.voiceModels, layout).isNotEmpty(),
         )
     status.text = describe(current)
     downloadButton.isEnabled = current.allowsDownload
@@ -189,7 +189,7 @@ class SettingsActivity : Activity() {
           try {
             Result.success(
                 TermsLoader(catalog, layout).load() to
-                    installer.bytesToDownload(PROVISIONAL_VOICE_MODEL_FILE_NAME)
+                    installer.bytesToDownload(DOWNLOADED_VOICE_MODEL_FILE_NAME)
             )
           } catch (e: IOException) {
             Log.w(TAG, "cannot load the terms", e)
@@ -275,7 +275,7 @@ class SettingsActivity : Activity() {
   }
 
   private fun schedule() {
-    val bytes = installer.bytesToDownload(PROVISIONAL_VOICE_MODEL_FILE_NAME)
+    val bytes = installer.bytesToDownload(DOWNLOADED_VOICE_MODEL_FILE_NAME)
     if (!AssetDownloadJobService.schedule(this, bytes)) {
       Log.w(TAG, "the download job was not scheduled")
       Toast.makeText(this, R.string.schedule_failed, Toast.LENGTH_LONG).show()

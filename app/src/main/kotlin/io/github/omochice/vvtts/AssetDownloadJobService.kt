@@ -92,7 +92,7 @@ class AssetDownloadJobService : JobService() {
     var firstProgressLogged = false
     var shownPercent = -1
     return installer.install(
-        PROVISIONAL_VOICE_MODEL_FILE_NAME,
+        DOWNLOADED_VOICE_MODEL_FILE_NAME,
         { doneBytes, totalBytes ->
           run.progress(doneBytes, totalBytes)
           if (!firstProgressLogged) {

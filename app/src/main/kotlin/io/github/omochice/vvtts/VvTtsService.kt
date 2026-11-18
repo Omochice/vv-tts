@@ -5,9 +5,12 @@ import android.speech.tts.SynthesisCallback
 import android.speech.tts.SynthesisRequest
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
+import android.speech.tts.Voice
 import android.util.Log
+import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.text.SentenceSplitter
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val TAG = "VvTts"
@@ -19,6 +22,9 @@ private const val PROVISIONAL_MAX_BRACKET_CONTENT_LENGTH = 100
 /** The system text-to-speech engine that reads Japanese text aloud. */
 class VvTtsService : TextToSpeechService() {
   private val splitter = SentenceSplitter(PROVISIONAL_MAX_BRACKET_CONTENT_LENGTH)
+  private val catalog by lazy { AssetCatalog.load() }
+  private val layout by lazy { AssetLayout(filesDir) }
+  private val preferredVoice by lazy { PreferredVoiceStore(this) }
   private var loop: SynthesisLoop? = null
   private val stopRequested = AtomicBoolean(false)
 
@@ -30,6 +36,31 @@ class VvTtsService : TextToSpeechService() {
 
   override fun onGetLanguage(): Array<String> = arrayOf("jpn", "JPN", "")
 
+  override fun onGetVoices(): List<Voice> =
+      currentVoices().map {
+        Voice(
+            it.name,
+            Locale.JAPAN,
+            Voice.QUALITY_NORMAL,
+            Voice.LATENCY_NORMAL,
+            false,
+            emptySet(),
+        )
+      }
+
+  override fun onIsValidVoiceName(voiceName: String?): Int =
+      if (currentVoices().any { it.name == voiceName }) TextToSpeech.SUCCESS else TextToSpeech.ERROR
+
+  override fun onLoadVoice(voiceName: String?): Int = onIsValidVoiceName(voiceName)
+
+  override fun onGetDefaultVoiceNameFor(
+      lang: String?,
+      country: String?,
+      variant: String?,
+  ): String? =
+      if (LanguageSupport.of(lang, country) == LanguageSupport.NONE) null
+      else resolveVoice(null, preferredVoice.get(), currentVoices())?.name
+
   override fun onStop() {
     stopRequested.set(true)
   }
@@ -38,20 +69,27 @@ class VvTtsService : TextToSpeechService() {
     stopRequested.set(false)
     val text = request.charSequenceText?.toString().orEmpty()
     val chunks = splitter.split(text)
-    logRequest(request, text, chunks)
-    speak(request, chunks, callback)
+    val voice = resolveVoice(request.voiceName, preferredVoice.get(), currentVoices())
+    logRequest(request, text, chunks, voice)
+    speak(request, voice, chunks, callback)
     // Without done(), the framework never tells the client about an error raised before start().
     callback.done()
   }
 
-  private fun speak(request: SynthesisRequest, chunks: List<String>, callback: SynthesisCallback) {
+  private fun currentVoices(): List<SpeakableVoice> = installedVoices(catalog.voiceModels, layout)
+
+  private fun speak(
+      request: SynthesisRequest,
+      voice: SpeakableVoice?,
+      chunks: List<String>,
+      callback: SynthesisCallback,
+  ) {
     if (LanguageSupport.of(request.language, request.country) == LanguageSupport.NONE) {
       Log.w(TAG, "unsupported locale ${request.language}-${request.country}")
       callback.error()
       return
     }
-    val layout = AssetLayout(filesDir)
-    if (!layout.isInstalled(PROVISIONAL_VOICE_MODEL_FILE_NAME)) {
+    if (voice == null) {
       Log.w(TAG, "speech assets are not installed")
       callback.error(TextToSpeech.ERROR_NOT_INSTALLED_YET)
       return
@@ -70,6 +108,7 @@ class VvTtsService : TextToSpeechService() {
     try {
       loop.run(
           chunks,
+          voice,
           Prosody.fromAndroid(request.speechRate, request.pitch),
           CallbackSink(callback),
       ) {
@@ -82,24 +121,21 @@ class VvTtsService : TextToSpeechService() {
   }
 
   private fun loopFor(layout: AssetLayout): SynthesisLoop =
-      loop
-          ?: SynthesisLoop(
-                  VoicevoxSpeechEngine(
-                      layout,
-                      PROVISIONAL_VOICE_MODEL_FILE_NAME,
-                      PROVISIONAL_STYLE_ID,
-                      cacheDir,
-                  )
-              )
-              .also { loop = it }
+      loop ?: SynthesisLoop(VoicevoxSpeechEngine(layout, cacheDir)).also { loop = it }
 
-  private fun logRequest(request: SynthesisRequest, text: String, chunks: List<String>) {
+  private fun logRequest(
+      request: SynthesisRequest,
+      text: String,
+      chunks: List<String>,
+      voice: SpeakableVoice?,
+  ) {
     Log.i(
         TAG,
         "request textLength=${text.length} chunks=${chunks.size} " +
             "chunkLengths=${chunks.map { it.length }} " +
             "locale=${request.language}/${request.country}/${request.variant} " +
-            "voice=${request.voiceName} rate=${request.speechRate} pitch=${request.pitch}",
+            "voice=${request.voiceName} resolvedVoice=${voice?.name} " +
+            "rate=${request.speechRate} pitch=${request.pitch}",
     )
     if (Log.isLoggable(TAG, Log.VERBOSE)) Log.v(TAG, "text=$text")
   }

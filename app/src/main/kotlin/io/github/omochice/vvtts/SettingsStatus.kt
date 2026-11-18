@@ -39,7 +39,7 @@ sealed interface SettingsStatus {
  * @param state the state of the download in this process.
  * @param isJobPending whether the system holds a scheduled download job, which outlives the
  *   process.
- * @param isInstalled whether the speech assets are present.
+ * @param isInstalled whether the engine can speak with at least one voice.
  */
 fun settingsStatusOf(
     state: InstallState,
