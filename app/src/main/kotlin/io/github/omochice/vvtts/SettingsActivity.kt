@@ -20,8 +20,8 @@ import io.github.omochice.vvtts.assets.InstallResult
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Lets the user download voice models after agreeing to their terms, and read the terms again
- * later.
+ * Lets the user download voice models after agreeing to their terms, choose the default voice, and
+ * read the terms again later.
  */
 class SettingsActivity : Activity() {
   private val catalog by lazy { AssetCatalog.load() }
@@ -31,6 +31,7 @@ class SettingsActivity : Activity() {
   }
 
   private lateinit var status: TextView
+  private lateinit var defaultVoice: DefaultVoicePicker
   private lateinit var voiceModelRows: VoiceModelRows
   private lateinit var terms: TermsDialog
   private var pendingVoiceModel: String? = null
@@ -57,6 +58,7 @@ class SettingsActivity : Activity() {
     awaitingPermission = savedInstanceState?.getString(STATE_AWAITING_PERMISSION)
     status = TextView(this).apply { textSize = 16f }
     terms = TermsDialog(this, catalog, layout, installer, ::requestNotificationsThenSchedule)
+    defaultVoice = DefaultVoicePicker(this)
     voiceModelRows =
         VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }
     val termsButton =
@@ -71,6 +73,7 @@ class SettingsActivity : Activity() {
           setPadding(gap, gap, gap, gap)
           addView(status)
           addView(termsButton)
+          addView(defaultVoice.view)
           addView(headingView(getString(R.string.voice_models_heading)))
           addView(TextView(this@SettingsActivity).apply { setText(R.string.voice_models_note) })
           addView(voiceModelRows.view)
@@ -154,6 +157,7 @@ class SettingsActivity : Activity() {
             installed.isNotEmpty(),
         )
     status.text = describe(current)
+    defaultVoice.show(installed)
     voiceModelRows.update(layout::isInstalled, current.allowsDownload)
   }
 
