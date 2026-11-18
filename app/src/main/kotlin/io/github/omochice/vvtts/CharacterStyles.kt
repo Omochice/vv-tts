@@ -3,7 +3,7 @@ package io.github.omochice.vvtts
 import io.github.omochice.vvtts.assets.Voice
 
 /**
- * The styles one character speaks in within a voice model.
+ * The [styles] one [character] speaks in within a voice model.
  *
  * @property label the text the settings screen shows, such as `ずんだもん（ノーマル、あまあま）`.
  */

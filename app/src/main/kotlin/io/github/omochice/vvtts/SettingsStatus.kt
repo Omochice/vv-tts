@@ -24,7 +24,9 @@ sealed interface SettingsStatus {
    */
   data class Preparing(val voiceModelFileName: String) : SettingsStatus
 
-  /** A download of [voiceModelFileName] is under way; both counts are in bytes. */
+  /**
+   * A download of [voiceModelFileName] is under way, with [doneBytes] of [totalBytes] bytes done.
+   */
   data class Downloading(
       val voiceModelFileName: String,
       val doneBytes: Long,

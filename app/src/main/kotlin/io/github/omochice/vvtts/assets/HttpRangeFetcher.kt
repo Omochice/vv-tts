@@ -16,7 +16,10 @@ enum class FetchEnd {
   STOPPED,
 }
 
-/** Signals a response status that neither carries the file nor says it is already complete. */
+/**
+ * Signals a response status [statusCode] that neither carries the file nor says it is already
+ * complete.
+ */
 class UnexpectedStatusException(val statusCode: Int) : IOException("HTTP status $statusCode")
 
 /**

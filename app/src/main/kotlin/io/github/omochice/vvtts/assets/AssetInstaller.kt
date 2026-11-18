@@ -23,7 +23,10 @@ sealed interface InstallResult {
    */
   data class DownloadFailed(val file: RemoteFile, val result: DownloadResult) : Failure
 
-  /** [file] was downloaded but could not be verified, unpacked or moved into place. */
+  /**
+   * [file] was downloaded but could not be verified, unpacked or moved into place, failing with
+   * [cause].
+   */
   data class PlacementFailed(val file: RemoteFile, val cause: IOException) : Failure
 }
 

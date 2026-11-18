@@ -2,10 +2,10 @@ package io.github.omochice.vvtts.assets
 
 import java.io.Reader
 
-/** One speaking style of one character, as VOICEVOX addresses it by [styleId]. */
+/** The speaking [style] of one [character], as VOICEVOX addresses it by [styleId]. */
 data class Voice(val character: String, val style: String, val styleId: Int)
 
-/** A VVM voice model file and the voices it can synthesize. */
+/** The VVM voice model [file] and the [voices] it can synthesize. */
 data class VoiceModel(val file: RemoteFile, val voices: List<Voice>)
 
 /**

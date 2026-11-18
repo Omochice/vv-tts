@@ -12,7 +12,7 @@ import java.net.URL
 import org.json.JSONException
 import org.json.JSONObject
 
-/** One terms document, shown verbatim under [title]. */
+/** One terms document, whose [text] is shown verbatim under [title]. */
 data class TermsDocument(val title: String, val text: String)
 
 /**
