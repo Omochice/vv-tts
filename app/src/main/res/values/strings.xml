@@ -25,6 +25,25 @@
     <string name="voice_models_note">初回は共通データもダウンロードします。</string>
     <string name="voice_model_installed">インストール済み</string>
 
+    <string name="dictionary_heading">読み方の辞書</string>
+    <string name="dictionary_note">読みはひらがなかカタカナで書きます。英字の大文字と小文字は区別しません。</string>
+    <string name="dictionary_empty">登録した単語はありません。</string>
+    <string name="dictionary_entry">%1$s：%2$s</string>
+    <string name="dictionary_read_failed">辞書を読み込めませんでした。</string>
+    <string name="dictionary_save_failed">辞書に保存できませんでした。</string>
+    <string name="dictionary_add_title">単語の追加</string>
+    <string name="dictionary_word">単語</string>
+    <string name="dictionary_reading">読み</string>
+    <string name="dictionary_error_empty_word">単語を入力してください。</string>
+    <string name="dictionary_error_unusable_character">単語に改行やタブは使えません。</string>
+    <string name="dictionary_error_sentence_end">単語に「。」「！」「？」は使えません。</string>
+    <string name="dictionary_error_empty_reading">読みを入力してください。</string>
+    <string name="dictionary_error_not_kana">読みはひらがなかカタカナだけで書いてください。</string>
+    <string name="dictionary_error_small_kana">読みの小さい字の並びを確かめてください。</string>
+    <string name="button_add">追加</string>
+    <string name="button_remove">削除</string>
+    <string name="button_cancel">キャンセル</string>
+
     <string name="terms_title">利用規約</string>
     <string name="terms_download_size">ダウンロードサイズ：%s</string>
     <string name="terms_onnx_runtime_heading">VOICEVOX ONNX Runtime</string>

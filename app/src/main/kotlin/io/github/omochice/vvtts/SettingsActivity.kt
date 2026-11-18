@@ -17,11 +17,13 @@ import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetInstaller
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.assets.InstallResult
+import io.github.omochice.vvtts.dictionary.UserDictionary
+import io.github.omochice.vvtts.dictionary.UserDictionaryFile
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Lets the user download voice models after agreeing to their terms, choose the default voice, and
- * read the terms again later.
+ * Lets the user download voice models after agreeing to their terms, choose the default voice, read
+ * the terms again later, and keep a dictionary of how words are read.
  */
 class SettingsActivity : Activity() {
   private val catalog by lazy { AssetCatalog.load() }
@@ -34,6 +36,7 @@ class SettingsActivity : Activity() {
   private lateinit var defaultVoice: DefaultVoicePicker
   private lateinit var voiceModelRows: VoiceModelRows
   private lateinit var terms: TermsDialog
+  private lateinit var dictionary: DictionarySection
   private var pendingVoiceModel: String? = null
 
   /** The voice model to schedule once the user has answered the notification permission request. */
@@ -58,6 +61,7 @@ class SettingsActivity : Activity() {
     awaitingPermission = savedInstanceState?.getString(STATE_AWAITING_PERMISSION)
     status = TextView(this).apply { textSize = 16f }
     terms = TermsDialog(this, catalog, installer, ::requestNotificationsThenSchedule)
+    dictionary = DictionarySection(this, UserDictionary(UserDictionaryFile(filesDir)))
     defaultVoice = DefaultVoicePicker(this)
     voiceModelRows =
         VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }
@@ -77,6 +81,7 @@ class SettingsActivity : Activity() {
           addView(headingView(getString(R.string.voice_models_heading)))
           addView(TextView(this@SettingsActivity).apply { setText(R.string.voice_models_note) })
           addView(voiceModelRows.view)
+          addView(dictionary.view)
         }
     setContentView(
         ScrollView(this).apply {
@@ -99,6 +104,7 @@ class SettingsActivity : Activity() {
     AssetDownloadJobService.state.addListener(stateListener)
     pendingVoiceModel = AssetDownloadJobService.pendingVoiceModel(this)
     render()
+    dictionary.refresh()
   }
 
   override fun onStop() {
@@ -113,6 +119,7 @@ class SettingsActivity : Activity() {
 
   override fun onDestroy() {
     terms.close()
+    dictionary.close()
     super.onDestroy()
   }
 
