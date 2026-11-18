@@ -1,55 +1,69 @@
 package io.github.omochice.vvtts
 
-import io.github.omochice.vvtts.assets.RemoteFile
+import io.github.omochice.vvtts.assets.Terms
+import io.github.omochice.vvtts.assets.TermsDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
 class ConsentFingerprintTest {
-  private val termsFile = terms("TERMS.txt", "a".repeat(64))
-  private val readme = terms("README.txt", "b".repeat(64))
-  private val release = "https://api.github.com/repos/VOICEVOX/onnxruntime-builder/releases/tags/1"
-
-  private fun terms(fileName: String, sha256: String) =
-      RemoteFile(fileName, "https://example.invalid/$fileName", 10, sha256)
+  private val readme = TermsDocument("README.txt", "readme")
+  private val termsFile = TermsDocument("TERMS.txt", "terms")
+  private val terms = Terms(listOf(readme, termsFile), "onnx runtime")
 
   @Test
   fun `the same terms give the same fingerprint`() {
     assertEquals(
-        consentFingerprint(listOf(termsFile, readme), release),
-        consentFingerprint(listOf(termsFile, readme), release),
+        consentFingerprint(terms),
+        consentFingerprint(Terms(listOf(readme, termsFile), "onnx runtime")),
     )
   }
 
   @Test
-  fun `the order of the terms files does not matter`() {
-    assertEquals(
-        consentFingerprint(listOf(termsFile, readme), release),
-        consentFingerprint(listOf(readme, termsFile), release),
-    )
-  }
-
-  @Test
-  fun `a terms file with other content gives another fingerprint`() {
+  fun `a voice model document with other text gives another fingerprint`() {
     assertNotEquals(
-        consentFingerprint(listOf(termsFile, readme), release),
-        consentFingerprint(listOf(termsFile, terms("README.txt", "c".repeat(64))), release),
+        consentFingerprint(terms),
+        consentFingerprint(
+            Terms(listOf(readme, termsFile.copy(text = "terms v2")), "onnx runtime")
+        ),
     )
   }
 
   @Test
-  fun `an added terms file gives another fingerprint`() {
+  fun `a voice model document with another title gives another fingerprint`() {
     assertNotEquals(
-        consentFingerprint(listOf(termsFile), release),
-        consentFingerprint(listOf(termsFile, readme), release),
+        consentFingerprint(terms),
+        consentFingerprint(
+            Terms(listOf(readme, termsFile.copy(title = "LICENSE.txt")), "onnx runtime")
+        ),
     )
   }
 
   @Test
-  fun `another ONNX Runtime release gives another fingerprint`() {
+  fun `an added voice model document gives another fingerprint`() {
     assertNotEquals(
-        consentFingerprint(listOf(termsFile, readme), release),
-        consentFingerprint(listOf(termsFile, readme), release.replace("tags/1", "tags/2")),
+        consentFingerprint(Terms(listOf(termsFile), "onnx runtime")),
+        consentFingerprint(terms),
+    )
+  }
+
+  @Test
+  fun `text moved from one document to the next gives another fingerprint`() {
+    assertNotEquals(
+        consentFingerprint(
+            Terms(listOf(TermsDocument("a", "xy"), TermsDocument("b", "z")), "onnx runtime")
+        ),
+        consentFingerprint(
+            Terms(listOf(TermsDocument("a", "x"), TermsDocument("b", "yz")), "onnx runtime")
+        ),
+    )
+  }
+
+  @Test
+  fun `other ONNX Runtime terms give another fingerprint`() {
+    assertNotEquals(
+        consentFingerprint(terms),
+        consentFingerprint(Terms(listOf(readme, termsFile), "onnx runtime v2")),
     )
   }
 }
