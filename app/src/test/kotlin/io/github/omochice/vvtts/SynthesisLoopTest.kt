@@ -7,8 +7,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SynthesisLoopTest {
-  private val NORMAL = Prosody(speedScale = 1.0, pitchScale = 0.0)
-  private val VOICE = SpeakableVoice("ずんだもん（ノーマル）", "0.vvm", 3)
+  private val neutralProsody = Prosody(speedScale = 1.0, pitchScale = 0.0)
+  private val defaultVoice = SpeakableVoice("ずんだもん（ノーマル）", "0.vvm", 3)
 
   private class RecordingEngine(private val bytesPerChunk: Int) : SpeechEngine {
     val synthesized = mutableListOf<String>()
@@ -35,7 +35,14 @@ class SynthesisLoopTest {
   fun `each chunk is synthesized once in reading order`() {
     val engine = RecordingEngine(bytesPerChunk = 4)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。", "三。"), VOICE, NORMAL, RecordingSink(16)) { false }
+    SynthesisLoop(engine).run(
+        listOf("一。", "二。", "三。"),
+        defaultVoice,
+        neutralProsody,
+        RecordingSink(16),
+    ) {
+      false
+    }
 
     assertEquals(listOf("一。", "二。", "三。"), engine.synthesized)
   }
@@ -56,7 +63,7 @@ class SynthesisLoopTest {
         }
     val fast = Prosody(speedScale = 1.5, pitchScale = 0.05)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), VOICE, fast, RecordingSink(16)) { false }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, fast, RecordingSink(16)) { false }
 
     assertEquals(listOf(fast, fast), prosodies)
   }
@@ -77,7 +84,9 @@ class SynthesisLoopTest {
         }
     val whisper = SpeakableVoice("ずんだもん（ささやき）", "5.vvm", 22)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), whisper, NORMAL, RecordingSink(16)) { false }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), whisper, neutralProsody, RecordingSink(16)) {
+      false
+    }
 
     assertEquals(listOf(whisper, whisper), voices)
   }
@@ -87,7 +96,7 @@ class SynthesisLoopTest {
     val engine = RecordingEngine(bytesPerChunk = 10)
     val sink = RecordingSink(maxWriteBytes = 4)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), VOICE, NORMAL, sink) { false }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, neutralProsody, sink) { false }
 
     assertEquals(listOf(4, 4, 2, 4, 4, 2), sink.writes.map { it.size })
     val expected = ByteArray(10) { (100 + it).toByte() } + ByteArray(10) { (200 + it).toByte() }
@@ -98,7 +107,12 @@ class SynthesisLoopTest {
   fun `audio within the sink limit is written in a single slice`() {
     val sink = RecordingSink(maxWriteBytes = 8)
 
-    SynthesisLoop(RecordingEngine(bytesPerChunk = 8)).run(listOf("一。"), VOICE, NORMAL, sink) {
+    SynthesisLoop(RecordingEngine(bytesPerChunk = 8)).run(
+        listOf("一。"),
+        defaultVoice,
+        neutralProsody,
+        sink,
+    ) {
       false
     }
 
@@ -110,7 +124,14 @@ class SynthesisLoopTest {
     val engine = RecordingEngine(bytesPerChunk = 4)
     val sink = RecordingSink(16)
 
-    SynthesisLoop(engine).run(SentenceSplitter(100).split(" \n　"), VOICE, NORMAL, sink) { false }
+    SynthesisLoop(engine).run(
+        SentenceSplitter(100).split(" \n　"),
+        defaultVoice,
+        neutralProsody,
+        sink,
+    ) {
+      false
+    }
 
     assertTrue(engine.synthesized.isEmpty())
     assertTrue(sink.writes.isEmpty())
@@ -133,7 +154,7 @@ class SynthesisLoopTest {
         }
     val sink = RecordingSink(16)
 
-    SynthesisLoop(engine).run(listOf("……。", "二。"), VOICE, NORMAL, sink) { false }
+    SynthesisLoop(engine).run(listOf("……。", "二。"), defaultVoice, neutralProsody, sink) { false }
 
     assertEquals(listOf("……。", "二。"), engine.synthesized)
     assertEquals(listOf(4), sink.writes.map { it.size })
@@ -144,7 +165,7 @@ class SynthesisLoopTest {
     val engine = RecordingEngine(bytesPerChunk = 4)
     val sink = RecordingSink(16)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), VOICE, NORMAL, sink) { true }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, neutralProsody, sink) { true }
 
     assertTrue(engine.synthesized.isEmpty())
     assertTrue(sink.writes.isEmpty())
@@ -155,7 +176,9 @@ class SynthesisLoopTest {
     val engine = RecordingEngine(bytesPerChunk = 10)
     val sink = RecordingSink(maxWriteBytes = 4)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), VOICE, NORMAL, sink) { sink.writes.size >= 2 }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, neutralProsody, sink) {
+      sink.writes.size >= 2
+    }
 
     assertEquals(2, sink.writes.size)
     assertEquals(listOf("一。"), engine.synthesized)
@@ -166,7 +189,9 @@ class SynthesisLoopTest {
     val engine = RecordingEngine(bytesPerChunk = 4)
     val sink = RecordingSink(maxWriteBytes = 4)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), VOICE, NORMAL, sink) { sink.writes.size >= 1 }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, neutralProsody, sink) {
+      sink.writes.size >= 1
+    }
 
     assertEquals(listOf("一。"), engine.synthesized)
   }
@@ -176,7 +201,7 @@ class SynthesisLoopTest {
     val engine = RecordingEngine(bytesPerChunk = 10)
     val sink = RecordingSink(maxWriteBytes = 4, acceptedWrites = 1)
 
-    SynthesisLoop(engine).run(listOf("一。", "二。"), VOICE, NORMAL, sink) { false }
+    SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, neutralProsody, sink) { false }
 
     assertEquals(2, sink.writes.size)
     assertEquals(listOf("一。"), engine.synthesized)
