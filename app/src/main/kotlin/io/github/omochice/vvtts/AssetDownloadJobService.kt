@@ -7,6 +7,7 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build
+import android.os.PersistableBundle
 import android.util.Log
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetInstaller
@@ -29,7 +30,14 @@ class AssetDownloadJobService : JobService() {
   @Volatile private var stopSignal = CountDownLatch(1)
 
   override fun onStartJob(params: JobParameters): Boolean {
-    Log.i(TAG, "download job started")
+    val voiceModelFileName = params.extras.getString(EXTRA_VOICE_MODEL)
+    if (voiceModelFileName == null) {
+      // Ended rather than given a voice model, because only a job scheduled by a build that
+      // downloaded a fixed voice model lacks the name, and the user may now want another one.
+      Log.w(TAG, "download job names no voice model")
+      return false
+    }
+    Log.i(TAG, "download job started for $voiceModelFileName")
     notifications.createChannel()
     setNotification(
         params,
@@ -38,7 +46,7 @@ class AssetDownloadJobService : JobService() {
         JOB_END_NOTIFICATION_POLICY_DETACH,
     )
     val stop = CountDownLatch(1).also { stopSignal = it }
-    thread(name = "asset-download") { download(params, stop) }
+    thread(name = "asset-download") { download(params, voiceModelFileName, stop) }
     return true
   }
 
@@ -48,8 +56,8 @@ class AssetDownloadJobService : JobService() {
     return true
   }
 
-  private fun download(params: JobParameters, stop: CountDownLatch) {
-    val run = state.startRun(DOWNLOADED_VOICE_MODEL_FILE_NAME)
+  private fun download(params: JobParameters, voiceModelFileName: String, stop: CountDownLatch) {
+    val run = state.startRun(voiceModelFileName)
     val isStopRequested = { stop.count == 0L }
     val installer =
         AssetInstaller(AssetCatalog.load(), AssetLayout(filesDir), Build.SUPPORTED_ABIS.first())
@@ -58,7 +66,7 @@ class AssetDownloadJobService : JobService() {
     val result =
         installWithRetries(
             MAX_ATTEMPTS,
-            attempt = { attempt(params, installer, run, isStopRequested) },
+            attempt = { attempt(params, installer, voiceModelFileName, run, isStopRequested) },
             pause = { stop.await(RETRY_PAUSE_SECONDS, TimeUnit.SECONDS) },
             isStopRequested = isStopRequested,
             onRetry = { failedAttempt, failure ->
@@ -86,13 +94,14 @@ class AssetDownloadJobService : JobService() {
   private fun attempt(
       params: JobParameters,
       installer: AssetInstaller,
+      voiceModelFileName: String,
       run: InstallStateHolder.Run,
       isStopRequested: () -> Boolean,
   ): InstallResult {
     var firstProgressLogged = false
     var shownPercent = -1
     return installer.install(
-        DOWNLOADED_VOICE_MODEL_FILE_NAME,
+        voiceModelFileName,
         { doneBytes, totalBytes ->
           run.progress(doneBytes, totalBytes)
           if (!firstProgressLogged) {
@@ -128,19 +137,26 @@ class AssetDownloadJobService : JobService() {
     private const val NOTIFICATION_ID = 1
     private const val MAX_ATTEMPTS = 5
     private const val RETRY_PAUSE_SECONDS = 10L
+    private const val EXTRA_VOICE_MODEL = "voiceModel"
 
     /**
-     * Schedules the download, which must be done while the app is visible to the user.
+     * Schedules the download of the voice model named [voiceModelFileName], together with whatever
+     * base parts are missing, replacing any download scheduled before.
+     *
+     * It must be scheduled while the app is visible to the user.
      *
      * @param estimatedBytes the bytes still to download.
      * @return whether the system accepted the job.
      */
-    fun schedule(context: Context, estimatedBytes: Long): Boolean {
+    fun schedule(context: Context, voiceModelFileName: String, estimatedBytes: Long): Boolean {
       val job =
           JobInfo.Builder(JOB_ID, ComponentName(context, AssetDownloadJobService::class.java))
               .setUserInitiated(true)
               .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
               .setEstimatedNetworkBytes(estimatedBytes, 0)
+              .setExtras(
+                  PersistableBundle().apply { putString(EXTRA_VOICE_MODEL, voiceModelFileName) }
+              )
               .build()
       return try {
         scheduler(context).schedule(job) == JobScheduler.RESULT_SUCCESS
@@ -150,8 +166,12 @@ class AssetDownloadJobService : JobService() {
       }
     }
 
-    /** Tells whether the system holds the download job, scheduled or running. */
-    fun isPending(context: Context): Boolean = scheduler(context).getPendingJob(JOB_ID) != null
+    /**
+     * Returns the voice model of the download job the system holds, scheduled or running, or null
+     * when it holds none.
+     */
+    fun pendingVoiceModel(context: Context): String? =
+        scheduler(context).getPendingJob(JOB_ID)?.extras?.getString(EXTRA_VOICE_MODEL)
 
     private fun scheduler(context: Context): JobScheduler =
         context.getSystemService(JobScheduler::class.java)

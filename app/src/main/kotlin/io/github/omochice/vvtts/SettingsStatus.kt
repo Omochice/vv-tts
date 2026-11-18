@@ -4,23 +4,39 @@ import io.github.omochice.vvtts.assets.InstallResult
 
 /** What the settings screen tells the user about the speech assets. */
 sealed interface SettingsStatus {
-  /** Everything needed to speak is present. */
+  /**
+   * At least one voice can speak, and the latest download neither is under way nor failed or
+   * stopped.
+   */
   data object Installed : SettingsStatus
 
-  /** Something is missing and no download is under way. */
+  /** No voice can speak, and the latest download neither is under way nor failed or stopped. */
   data object NotInstalled : SettingsStatus
 
-  /** A download is scheduled but has not started, such as while there is no network. */
-  data object Pending : SettingsStatus
+  /**
+   * A download of [voiceModelFileName] is scheduled but has not started, such as while there is no
+   * network.
+   */
+  data class Pending(val voiceModelFileName: String) : SettingsStatus
 
-  /** A download has started but has not reported how much it has to fetch. */
-  data object Preparing : SettingsStatus
+  /**
+   * A download of [voiceModelFileName] has started but has not reported how much it has to fetch.
+   */
+  data class Preparing(val voiceModelFileName: String) : SettingsStatus
 
-  /** A download is under way; both counts are in bytes. */
-  data class Downloading(val doneBytes: Long, val totalBytes: Long) : SettingsStatus
+  /** A download of [voiceModelFileName] is under way; both counts are in bytes. */
+  data class Downloading(
+      val voiceModelFileName: String,
+      val doneBytes: Long,
+      val totalBytes: Long,
+  ) : SettingsStatus
 
-  /** A transfer broke off, and the download waits before attempt [attempt] of [maxAttempts]. */
-  data class Retrying(val attempt: Int, val maxAttempts: Int) : SettingsStatus
+  /**
+   * A transfer broke off, and the download of [voiceModelFileName] waits before attempt [attempt]
+   * of [maxAttempts].
+   */
+  data class Retrying(val voiceModelFileName: String, val attempt: Int, val maxAttempts: Int) :
+      SettingsStatus
 
   /** The latest download was stopped before it finished. */
   data object Stopped : SettingsStatus
@@ -30,36 +46,35 @@ sealed interface SettingsStatus {
 
   /** Whether the user may start a download from this status. */
   val allowsDownload: Boolean
-    get() = this is NotInstalled || this is Stopped || this is Failed
+    get() = this is NotInstalled || this is Installed || this is Stopped || this is Failed
 }
 
 /**
  * Decides what the settings screen shows.
  *
  * @param state the state of the download in this process.
- * @param isJobPending whether the system holds a scheduled download job, which outlives the
- *   process.
+ * @param pendingVoiceModel the voice model of the download job the system holds, which outlives the
+ *   process; null when it holds none.
  * @param isInstalled whether the engine can speak with at least one voice.
  */
 fun settingsStatusOf(
     state: InstallState,
-    isJobPending: Boolean,
+    pendingVoiceModel: String?,
     isInstalled: Boolean,
 ): SettingsStatus =
     when {
       state is InstallState.Running && state.totalBytes > 0 ->
-          SettingsStatus.Downloading(state.doneBytes, state.totalBytes)
-      state is InstallState.Running -> SettingsStatus.Preparing
-      state is InstallState.Retrying -> SettingsStatus.Retrying(state.attempt, state.maxAttempts)
-      isJobPending -> SettingsStatus.Pending
+          SettingsStatus.Downloading(state.voiceModelFileName, state.doneBytes, state.totalBytes)
+      state is InstallState.Running -> SettingsStatus.Preparing(state.voiceModelFileName)
+      state is InstallState.Retrying ->
+          SettingsStatus.Retrying(state.voiceModelFileName, state.attempt, state.maxAttempts)
+      pendingVoiceModel != null -> SettingsStatus.Pending(pendingVoiceModel)
+      // Ahead of isInstalled, because with other voice models installed the user would otherwise
+      // never learn that the one just asked for did not arrive.
+      state is InstallState.Finished && state.result is InstallResult.Failure ->
+          SettingsStatus.Failed(failureReasonOf(state.result))
+      state is InstallState.Finished && state.result == InstallResult.Stopped ->
+          SettingsStatus.Stopped
       isInstalled -> SettingsStatus.Installed
-      state is InstallState.Finished -> finishedStatusOf(state.result)
       else -> SettingsStatus.NotInstalled
-    }
-
-private fun finishedStatusOf(result: InstallResult): SettingsStatus =
-    when (result) {
-      is InstallResult.Failure -> SettingsStatus.Failed(failureReasonOf(result))
-      InstallResult.Stopped -> SettingsStatus.Stopped
-      InstallResult.Installed -> SettingsStatus.NotInstalled
     }
