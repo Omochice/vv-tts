@@ -20,6 +20,9 @@
     <string name="button_terms">利用規約とクレジットを表示</string>
     <string name="schedule_failed">ダウンロードを始められませんでした。</string>
 
+    <string name="default_voice_heading">既定の声</string>
+    <string name="default_voice_note">すでに接続しているアプリは、接続し直すまで以前の声で読み上げます。読み上げる声をアプリの中で選べる場合は、そこで選んだ声が使われます。</string>
+
     <string name="voice_models_heading">音声モデル</string>
     <string name="voice_models_note">最初のダウンロードでは、どの音声モデルにも必要な共通のデータも合わせてダウンロードします。</string>
     <string name="voice_model_installed">インストール済み</string>
