@@ -35,7 +35,7 @@
     <string name="terms_close">閉じる</string>
 
     <string name="notification_channel">音声データのダウンロード</string>
-    <string name="notification_running">音声データをダウンロードしています</string>
-    <string name="notification_done">音声データのダウンロードが完了しました</string>
-    <string name="notification_failed">音声データのダウンロードに失敗しました</string>
+    <string name="notification_running">音声データをダウンロード中</string>
+    <string name="notification_done">音声データをダウンロードしました</string>
+    <string name="notification_failed">音声データをダウンロードできませんでした</string>
 </resources>
