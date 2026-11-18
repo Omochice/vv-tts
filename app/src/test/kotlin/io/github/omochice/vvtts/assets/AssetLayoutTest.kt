@@ -35,6 +35,14 @@ class AssetLayoutTest {
   }
 
   @Test
+  fun `the library sits inside the ONNX Runtime directory and downloads have their own directory`() {
+    val layout = layout()
+
+    assertEquals(File(tmp.root, "ort"), layout.onnxRuntimeDir)
+    assertEquals(File(tmp.root, "downloads"), layout.downloadsDir)
+  }
+
+  @Test
   fun `a root with the library, a populated dictionary and the voice model is installed`() {
     installEverything()
 
