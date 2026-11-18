@@ -70,6 +70,25 @@ class SynthesisLoopTest {
   }
 
   @Test
+  fun `a chunk with nothing to pronounce writes nothing and the next chunk is still spoken`() {
+    val engine =
+        object : SpeechEngine {
+          val synthesized = mutableListOf<String>()
+
+          override fun synthesize(chunk: String): ByteArray {
+            synthesized += chunk
+            return if (chunk == "……。") ByteArray(0) else ByteArray(4) { 7 }
+          }
+        }
+    val sink = RecordingSink(16)
+
+    SynthesisLoop(engine).run(listOf("……。", "二。"), sink) { false }
+
+    assertEquals(listOf("……。", "二。"), engine.synthesized)
+    assertEquals(listOf(4), sink.writes.map { it.size })
+  }
+
+  @Test
   fun `a stop raised before the request starts synthesizes nothing`() {
     val engine = RecordingEngine(bytesPerChunk = 4)
     val sink = RecordingSink(16)
