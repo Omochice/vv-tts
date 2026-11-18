@@ -34,7 +34,8 @@ internal class BackgroundPronouncer(
             Log.w(TAG, "cannot pronounce: ${e.javaClass.name}")
             Result.failure(e)
           }
-      activity.runOnUiThread { deliver(result) }
+      // Not delivered to a destroyed activity, whose dialogs can no longer be shown.
+      activity.runOnUiThread { if (!activity.isDestroyed) deliver(result) }
     }
   }
 }

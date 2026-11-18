@@ -24,6 +24,7 @@ internal class WordDialog(
     private val save: (DictionaryEntry) -> Unit,
 ) {
   private var dialog: AlertDialog? = null
+  private var picker: AccentPicker? = null
 
   /**
    * Shows the dialog, replacing one already showing: empty to add a word, or filled with [entry] to
@@ -62,7 +63,7 @@ internal class WordDialog(
           addView(accent.view)
           addView(message)
         }
-    dialog?.dismiss()
+    close()
     val shown =
         AlertDialog.Builder(activity)
             .setTitle(
@@ -88,10 +89,14 @@ internal class WordDialog(
       }
     }
     dialog = shown
+    picker = accent
   }
 
-  /** Dismisses the dialog if it is showing. */
+  /** Dismisses the dialog if it is showing, together with the accent list it opened. */
   fun close() {
+    // Closed here rather than only from the dismiss listener, which Android runs a message later,
+    // after an activity being destroyed has already lost its window.
+    picker?.close()
     dialog?.dismiss()
   }
 
