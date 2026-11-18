@@ -17,18 +17,18 @@
     <string name="failure_unsupported_device">この端末のCPUには対応していません。</string>
 
     <string name="button_download">ダウンロード</string>
-    <string name="button_terms">利用規約とクレジットを表示</string>
+    <string name="button_terms">利用規約</string>
     <string name="schedule_failed">ダウンロードを始められませんでした。</string>
 
     <string name="default_voice_heading">デフォルトの声</string>
-    <string name="default_voice_note">すでに接続しているアプリは、接続し直すまで以前の声で読み上げます。読み上げる声をアプリの中で選べる場合は、そこで選んだ声が使われます。</string>
+    <string name="default_voice_note">接続中のアプリには、再接続後に反映されます。アプリ側で選んだ声が優先されます。</string>
 
     <string name="voice_models_heading">音声モデル</string>
-    <string name="voice_models_note">最初のダウンロードでは、どの音声モデルにも必要な共通のデータも合わせてダウンロードします。</string>
+    <string name="voice_models_note">初回は共通データもダウンロードします。</string>
     <string name="voice_model_installed">インストール済み</string>
 
     <string name="terms_title">利用規約</string>
-    <string name="terms_download_size">ダウンロードするデータの合計：%s</string>
+    <string name="terms_download_size">ダウンロードサイズ：%s</string>
     <string name="terms_onnx_runtime_heading">VOICEVOX ONNX Runtime</string>
     <string name="terms_agree">同意してダウンロード</string>
     <string name="terms_cancel">キャンセル</string>
