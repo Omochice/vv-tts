@@ -32,8 +32,13 @@ class AssetLayout(root: File) {
   fun hasVoiceModel(fileName: String): Boolean = voiceModel(fileName).isFile
 
   /**
+   * Tells whether the parts every voice model needs, ONNX Runtime and the dictionary, are present.
+   */
+  fun hasBaseParts(): Boolean = hasOnnxRuntime() && hasDictionary()
+
+  /**
    * Tells whether everything needed to speak with the voice model [voiceModelFileName] is present.
    */
   fun isInstalled(voiceModelFileName: String): Boolean =
-      hasOnnxRuntime() && hasDictionary() && hasVoiceModel(voiceModelFileName)
+      hasBaseParts() && hasVoiceModel(voiceModelFileName)
 }
