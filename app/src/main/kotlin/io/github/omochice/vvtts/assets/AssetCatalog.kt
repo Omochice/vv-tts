@@ -12,7 +12,8 @@ data class VoiceModel(val file: RemoteFile, val voices: List<Voice>)
  * The pinned set of remote files the app downloads after the user accepts their terms.
  *
  * @property dictionaryArchive the gzipped tar of the OpenJTalk dictionary.
- * @property terms the documents whose terms the user accepts before voice models are downloaded.
+ * @property terms the published terms documents, which the app bundles rather than downloads; their
+ *   rows pin the bundled documents to the release.
  * @property voiceModels the talk voice models, ordered by the number in their file names.
  * @property onnxRuntimeArchives the gzipped tar of the ONNX Runtime library for each Android ABI
  *   name, such as `arm64-v8a`; empty when the asset table lists none.
