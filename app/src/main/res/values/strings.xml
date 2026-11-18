@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="settings_title">vv-ttsの設定</string>
-
     <string name="status_installed">音声モデルはインストール済みです。</string>
     <string name="status_not_installed">音声モデルをダウンロードしてください。</string>
     <string name="status_pending">%1$s：ダウンロード待ち</string>
