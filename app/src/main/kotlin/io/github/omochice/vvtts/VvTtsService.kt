@@ -10,7 +10,7 @@ import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.text.SentenceSplitter
 import java.util.concurrent.atomic.AtomicBoolean
 
-private const val TAG = "VvTts"
+internal const val TAG = "VvTts"
 
 // Provisional until request logs from real e-book readers show typical bracket lengths.
 // It lives here alone so tuning it later touches a single place.
