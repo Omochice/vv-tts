@@ -9,6 +9,7 @@ import android.speech.tts.Voice
 import android.util.Log
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
+import io.github.omochice.vvtts.text.RubyNormalizer
 import io.github.omochice.vvtts.text.SentenceSplitter
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
@@ -69,7 +70,7 @@ class VvTtsService : TextToSpeechService() {
   override fun onSynthesizeText(request: SynthesisRequest, callback: SynthesisCallback) {
     stopRequested.set(false)
     val text = request.charSequenceText?.toString().orEmpty()
-    val chunks = splitter.split(text)
+    val chunks = splitter.split(RubyNormalizer.normalize(text))
     val voice = resolveVoice(request.voiceName, preferredVoice.get(), currentVoices())
     logRequest(request, text, chunks, voice)
     speak(request, voice, chunks, callback)
