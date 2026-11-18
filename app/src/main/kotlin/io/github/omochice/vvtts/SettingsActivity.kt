@@ -20,7 +20,7 @@ import io.github.omochice.vvtts.assets.InstallResult
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Lets the user download the speech assets after agreeing to their terms, and read the terms again
+ * Lets the user download voice models after agreeing to their terms, and read the terms again
  * later.
  */
 class SettingsActivity : Activity() {
@@ -31,9 +31,12 @@ class SettingsActivity : Activity() {
   }
 
   private lateinit var status: TextView
-  private lateinit var downloadButton: Button
+  private lateinit var voiceModelRows: VoiceModelRows
   private lateinit var terms: TermsDialog
-  private var jobPending = false
+  private var pendingVoiceModel: String? = null
+
+  /** The voice model to schedule once the user has answered the notification permission request. */
+  private var awaitingPermission: String? = null
 
   private val renderPosted = AtomicBoolean(false)
   private val stateListener: (InstallState) -> Unit = {
@@ -51,13 +54,11 @@ class SettingsActivity : Activity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    awaitingPermission = savedInstanceState?.getString(STATE_AWAITING_PERMISSION)
     status = TextView(this).apply { textSize = 16f }
-    terms = TermsDialog(this, catalog, layout, installer) { requestNotificationsThenSchedule() }
-    downloadButton =
-        Button(this).apply {
-          setText(R.string.button_download)
-          setOnClickListener { startDownload() }
-        }
+    terms = TermsDialog(this, catalog, layout, installer, ::requestNotificationsThenSchedule)
+    voiceModelRows =
+        VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }
     val termsButton =
         Button(this).apply {
           setText(R.string.button_terms)
@@ -69,8 +70,10 @@ class SettingsActivity : Activity() {
           val gap = dp(16)
           setPadding(gap, gap, gap, gap)
           addView(status)
-          addView(downloadButton)
           addView(termsButton)
+          addView(headingView(getString(R.string.voice_models_heading)))
+          addView(TextView(this@SettingsActivity).apply { setText(R.string.voice_models_note) })
+          addView(voiceModelRows.view)
         }
     setContentView(
         ScrollView(this).apply {
@@ -91,13 +94,18 @@ class SettingsActivity : Activity() {
   override fun onStart() {
     super.onStart()
     AssetDownloadJobService.state.addListener(stateListener)
-    jobPending = AssetDownloadJobService.isPending(this)
+    pendingVoiceModel = AssetDownloadJobService.pendingVoiceModel(this)
     render()
   }
 
   override fun onStop() {
     AssetDownloadJobService.state.removeListener(stateListener)
     super.onStop()
+  }
+
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    outState.putString(STATE_AWAITING_PERMISSION, awaitingPermission)
   }
 
   override fun onDestroy() {
@@ -111,9 +119,11 @@ class SettingsActivity : Activity() {
       grantResults: IntArray,
   ) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    if (requestCode != REQUEST_NOTIFICATIONS) return
     // Scheduled whatever the answer, because the download works without notifications; the
     // system still lists it among running tasks.
-    if (requestCode == REQUEST_NOTIFICATIONS) schedule()
+    awaitingPermission?.let(::schedule)
+    awaitingPermission = null
   }
 
   /**
@@ -126,67 +136,85 @@ class SettingsActivity : Activity() {
   private fun forgetFinishedJob() {
     val current = AssetDownloadJobService.state.current
     if (current is InstallState.Finished) {
-      jobPending =
-          current.result == InstallResult.Stopped && AssetDownloadJobService.isPending(this)
+      pendingVoiceModel =
+          if (current.result == InstallResult.Stopped) {
+            AssetDownloadJobService.pendingVoiceModel(this)
+          } else {
+            null
+          }
     }
   }
 
   private fun render() {
+    val installed = installedVoices(catalog.voiceModels, layout)
     val current =
         settingsStatusOf(
             AssetDownloadJobService.state.current,
-            jobPending,
-            installedVoices(catalog.voiceModels, layout).isNotEmpty(),
+            pendingVoiceModel,
+            installed.isNotEmpty(),
         )
     status.text = describe(current)
-    downloadButton.isEnabled = current.allowsDownload
+    voiceModelRows.update(layout::isInstalled, current.allowsDownload)
   }
 
   private fun describe(current: SettingsStatus): String =
       when (current) {
         SettingsStatus.Installed -> getString(R.string.status_installed)
         SettingsStatus.NotInstalled -> getString(R.string.status_not_installed)
-        SettingsStatus.Pending -> getString(R.string.status_pending)
-        SettingsStatus.Preparing -> getString(R.string.status_preparing)
+        is SettingsStatus.Pending ->
+            getString(R.string.status_pending, voiceModelName(current.voiceModelFileName))
+        is SettingsStatus.Preparing ->
+            getString(R.string.status_preparing, voiceModelName(current.voiceModelFileName))
         is SettingsStatus.Downloading ->
             getString(
                 R.string.status_running,
+                voiceModelName(current.voiceModelFileName),
                 wholePercent(current.doneBytes, current.totalBytes),
                 Formatter.formatShortFileSize(this, current.doneBytes),
                 Formatter.formatShortFileSize(this, current.totalBytes),
             )
         is SettingsStatus.Retrying ->
-            getString(R.string.status_retrying, current.attempt, current.maxAttempts)
+            getString(
+                R.string.status_retrying,
+                voiceModelName(current.voiceModelFileName),
+                current.attempt,
+                current.maxAttempts,
+            )
         SettingsStatus.Stopped -> getString(R.string.status_stopped)
         is SettingsStatus.Failed -> getString(current.reason.messageRes())
       }
 
-  private fun startDownload() {
-    terms.requestConsent(DOWNLOADED_VOICE_MODEL_FILE_NAME)
+  /** Names a voice model by the characters it holds, which the user knows it by. */
+  private fun voiceModelName(fileName: String): String {
+    val voices = catalog.voiceModels.find { it.file.fileName == fileName }?.voices.orEmpty()
+    val characters = characterStylesOf(voices).joinToString("、") { it.character }
+    return getString(R.string.voice_model_name, characters.ifEmpty { fileName })
   }
 
-  private fun requestNotificationsThenSchedule() {
+  private fun requestNotificationsThenSchedule(voiceModelFileName: String) {
     if (
         checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED
     ) {
-      schedule()
+      schedule(voiceModelFileName)
     } else {
+      awaitingPermission = voiceModelFileName
       requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQUEST_NOTIFICATIONS)
     }
   }
 
-  private fun schedule() {
-    val bytes = installer.bytesToDownload(DOWNLOADED_VOICE_MODEL_FILE_NAME)
-    if (!AssetDownloadJobService.schedule(this, bytes)) {
+  private fun schedule(voiceModelFileName: String) {
+    val bytes = installer.bytesToDownload(voiceModelFileName)
+    if (!AssetDownloadJobService.schedule(this, voiceModelFileName, bytes)) {
       Log.w(TAG, "the download job was not scheduled")
       Toast.makeText(this, R.string.schedule_failed, Toast.LENGTH_LONG).show()
     }
-    jobPending = AssetDownloadJobService.isPending(this)
+    pendingVoiceModel = AssetDownloadJobService.pendingVoiceModel(this)
     render()
   }
 
   private companion object {
     const val REQUEST_NOTIFICATIONS = 1
+    const val STATE_AWAITING_PERMISSION = "awaitingPermission"
   }
 }

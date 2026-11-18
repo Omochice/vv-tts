@@ -3,11 +3,11 @@
     <string name="settings_title">vv-ttsの設定</string>
 
     <string name="status_installed">音声データはインストール済みです。</string>
-    <string name="status_not_installed">音声データがまだインストールされていません。</string>
-    <string name="status_pending">ダウンロードの開始を待っています。ネットワークにつながると始まります。</string>
-    <string name="status_preparing">ダウンロードを準備しています。</string>
-    <string name="status_running">ダウンロード中です（%1$d%%、%2$s／%3$s）。</string>
-    <string name="status_retrying">通信が途切れたため、まもなくもう一度試します（%1$d/%2$d回目）。</string>
+    <string name="status_not_installed">音声データがまだインストールされていません。下の一覧から音声モデルを選んでダウンロードしてください。</string>
+    <string name="status_pending">%1$sのダウンロードの開始を待っています。ネットワークにつながると始まります。</string>
+    <string name="status_preparing">%1$sのダウンロードを準備しています。</string>
+    <string name="status_running">%1$sをダウンロード中です（%2$d%%、%3$s／%4$s）。</string>
+    <string name="status_retrying">%1$sのダウンロード中に通信が途切れたため、まもなくもう一度試します（%2$d/%3$d回目）。</string>
     <string name="status_stopped">ダウンロードが中断されました。</string>
 
     <string name="failure_transfer">ダウンロードが途中で止まりました。ネットワークへの接続と端末の空き容量を確かめてから、もう一度お試しください。</string>
@@ -16,9 +16,14 @@
     <string name="failure_storage">受け取ったファイルを保存できませんでした。端末の空き容量を確かめてから、もう一度お試しください。</string>
     <string name="failure_unsupported_device">この端末のCPUには対応していません。</string>
 
-    <string name="button_download">音声データをダウンロード</string>
+    <string name="button_download">ダウンロード</string>
     <string name="button_terms">利用規約とクレジットを表示</string>
     <string name="schedule_failed">ダウンロードを始められませんでした。</string>
+
+    <string name="voice_models_heading">音声モデル</string>
+    <string name="voice_models_note">最初のダウンロードでは、どの音声モデルにも必要な共通のデータも合わせてダウンロードします。</string>
+    <string name="voice_model_installed">インストール済み</string>
+    <string name="voice_model_name">「%1$s」の音声モデル</string>
 
     <string name="terms_title">利用規約</string>
     <string name="terms_loading">利用規約を取得しています…</string>
