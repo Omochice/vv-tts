@@ -4,6 +4,9 @@ private const val DELIMITERS = "。！？!?\n"
 private const val OPENERS = "「『（("
 private const val CLOSERS = "」』）)"
 
+/** Tells whether [SentenceSplitter] ends a chunk after [char] when it is outside brackets. */
+fun isSentenceEnd(char: Char): Boolean = char in DELIMITERS
+
 /**
  * Splits text into sentence-sized chunks that are synthesized one at a time.
  *
@@ -33,7 +36,7 @@ class SentenceSplitter(private val maxBracketContentLength: Int) {
     var start = 0
     var i = 0
     while (i < text.length) {
-      if (!sheltered[i] && text[i] in DELIMITERS) {
+      if (!sheltered[i] && isSentenceEnd(text[i])) {
         val end = endOfTrailingRun(text, i + 1)
         chunks += text.substring(start, end)
         start = end
@@ -86,7 +89,7 @@ class SentenceSplitter(private val maxBracketContentLength: Int) {
 
   private fun endOfTrailingRun(text: String, from: Int): Int {
     var end = from
-    while (end < text.length && (text[end] in DELIMITERS || text[end] in CLOSERS)) end++
+    while (end < text.length && (isSentenceEnd(text[end]) || text[end] in CLOSERS)) end++
     return end
   }
 }
