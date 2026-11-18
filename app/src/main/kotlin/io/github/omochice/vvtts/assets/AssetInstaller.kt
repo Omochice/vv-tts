@@ -55,27 +55,13 @@ class AssetInstaller(
       onProgress: (doneBytes: Long, totalBytes: Long) -> Unit,
       isStopRequested: () -> Boolean,
   ): InstallResult {
-    val voiceModel = catalog.voiceModels.find { it.file.fileName == voiceModelFileName }
-    requireNotNull(voiceModel) { "the catalog has no voice model named $voiceModelFileName" }
+    val voiceModel = voiceModelNamed(voiceModelFileName)
     synchronized(installLock) {
-      val parts = buildList {
-        if (!layout.hasOnnxRuntime()) {
-          val archive =
-              catalog.onnxRuntimeArchives[abi] ?: return InstallResult.NoOnnxRuntimeFor(abi)
-          add(archivePart(archive, layout.onnxRuntimeDir))
-        }
-        if (!layout.hasDictionary()) {
-          add(archivePart(catalog.dictionaryArchive, layout.dictionaryDir))
-        }
-        if (!layout.hasVoiceModel(voiceModelFileName)) {
-          add(Part(voiceModel.file, layout.voiceModel(voiceModelFileName), extractTo = null))
-        }
+      if (!layout.hasOnnxRuntime() && abi !in catalog.onnxRuntimeArchives) {
+        return InstallResult.NoOnnxRuntimeFor(abi)
       }
-      val progress =
-          Progress(
-              parts.filterNot { it.download.exists() }.sumOf { it.remote.sizeBytes },
-              onProgress,
-          )
+      val parts = missingParts(voiceModel)
+      val progress = Progress(parts.downloadBytes(), onProgress)
       for (part in parts) {
         installPart(part, progress, isStopRequested)?.let {
           return it
@@ -84,6 +70,29 @@ class AssetInstaller(
       return InstallResult.Installed
     }
   }
+
+  private fun voiceModelNamed(fileName: String): VoiceModel {
+    val voiceModel = catalog.voiceModels.find { it.file.fileName == fileName }
+    requireNotNull(voiceModel) { "the catalog has no voice model named $fileName" }
+    return voiceModel
+  }
+
+  /** Lists what [layout] lacks, leaving out an ONNX Runtime the catalog has no build of. */
+  private fun missingParts(voiceModel: VoiceModel): List<Part> = buildList {
+    if (!layout.hasOnnxRuntime()) {
+      catalog.onnxRuntimeArchives[abi]?.let { add(archivePart(it, layout.onnxRuntimeDir)) }
+    }
+    if (!layout.hasDictionary()) {
+      add(archivePart(catalog.dictionaryArchive, layout.dictionaryDir))
+    }
+    val fileName = voiceModel.file.fileName
+    if (!layout.hasVoiceModel(fileName)) {
+      add(Part(voiceModel.file, layout.voiceModel(fileName), extractTo = null))
+    }
+  }
+
+  private fun List<Part>.downloadBytes(): Long =
+      filterNot { it.download.exists() }.sumOf { it.remote.sizeBytes }
 
   private fun archivePart(archive: RemoteFile, extractTo: File) =
       Part(archive, File(layout.downloadsDir, archive.fileName), extractTo)
