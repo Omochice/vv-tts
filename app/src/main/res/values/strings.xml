@@ -2,7 +2,7 @@
 <resources>
     <string name="settings_title">vv-ttsの設定</string>
 
-    <string name="status_installed">音声データはインストール済みです。</string>
+    <string name="status_installed">音声モデルはインストール済みです。</string>
     <string name="status_not_installed">音声モデルをダウンロードしてください。</string>
     <string name="status_pending">%1$s：ダウンロード待ち</string>
     <string name="status_preparing">%1$s：準備中</string>
@@ -34,8 +34,8 @@
     <string name="terms_cancel">キャンセル</string>
     <string name="terms_close">閉じる</string>
 
-    <string name="notification_channel">音声データのダウンロード</string>
-    <string name="notification_running">音声データをダウンロード中</string>
-    <string name="notification_done">音声データをダウンロードしました</string>
-    <string name="notification_failed">音声データをダウンロードできませんでした</string>
+    <string name="notification_channel">音声モデルのダウンロード</string>
+    <string name="notification_running">音声モデルをダウンロード中</string>
+    <string name="notification_done">音声モデルをダウンロードしました</string>
+    <string name="notification_failed">音声モデルをダウンロードできませんでした</string>
 </resources>
