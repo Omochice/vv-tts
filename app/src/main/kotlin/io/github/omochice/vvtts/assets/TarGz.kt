@@ -92,34 +92,40 @@ private class TarHeader(val name: String, val size: Long, val isDirectory: Boole
     /** Returns null for the zero block that ends the archive. */
     fun parse(block: ByteArray): TarHeader? {
       if (block.all { it == 0.toByte() }) return null
-      val name = String(block, 0, 100).trimEnd('\u0000')
-      if (octal(block, 148, 8) != checksum(block)) {
+      val name = String(block, NAME_OFFSET, NAME_LENGTH).trimEnd('\u0000')
+      if (octal(block, CHECKSUM_OFFSET, CHECKSUM_LENGTH) != checksum(block)) {
         throw MalformedArchiveException("header checksum mismatch for $name")
       }
       // POSIX ustar is refused rather than also accepted, because its prefix field would have to be
       // joined to the name, while both pinned archives are GNU tar, where that field means
       // something else.
-      if (String(block, 257, 8, Charsets.US_ASCII) != GNU_MAGIC) {
+      if (String(block, MAGIC_OFFSET, GNU_MAGIC.length, Charsets.US_ASCII) != GNU_MAGIC) {
         throw MalformedArchiveException("$name is not in GNU tar format")
       }
       val isDirectory =
-          when (block[156].toInt().toChar()) {
+          when (block[TYPEFLAG_OFFSET].toInt().toChar()) {
             '0' -> false
             '5' -> true
             else ->
                 throw MalformedArchiveException(
-                    "unsupported entry type '${block[156].toInt().toChar()}' for $name"
+                    "unsupported entry type '${block[TYPEFLAG_OFFSET].toInt().toChar()}' for $name"
                 )
           }
       return TarHeader(
           name = name,
-          size = octal(block, 124, 12),
+          size = octal(block, SIZE_OFFSET, SIZE_LENGTH),
           isDirectory = isDirectory,
       )
     }
 
     private fun checksum(block: ByteArray): Long =
-        block.indices.sumOf { if (it in 148 until 156) 0x20L else (block[it].toLong() and 0xff) }
+        block.indices.sumOf {
+          if (it in CHECKSUM_OFFSET until CHECKSUM_OFFSET + CHECKSUM_LENGTH) {
+            CHECKSUM_PLACEHOLDER.code.toLong()
+          } else {
+            block[it].toUByte().toLong()
+          }
+        }
 
     private fun octal(block: ByteArray, offset: Int, length: Int): Long {
       val digits =
@@ -129,7 +135,7 @@ private class TarHeader(val name: String, val size: Long, val isDirectory: Boole
       if (digits.isEmpty() || digits.any { it !in '0'..'7' }) {
         throw MalformedArchiveException("unreadable numeric header field at offset $offset")
       }
-      return digits.toLong(8)
+      return digits.toLong(radix = 8)
     }
   }
 }
@@ -148,7 +154,7 @@ private fun pathComponents(name: String): List<String> {
 }
 
 private fun copyExactly(input: DataInputStream, output: OutputStream, size: Long) {
-  val buffer = ByteArray(64 * 1024)
+  val buffer = ByteArray(COPY_BUFFER_BYTES)
   var remaining = size
   while (remaining > 0) {
     val chunk = minOf(remaining, buffer.size.toLong()).toInt()
@@ -164,3 +170,14 @@ private fun DataInputStream.skipFully(count: Long) {
 
 private const val BLOCK = 512
 private const val GNU_MAGIC = "ustar  \u0000"
+private const val COPY_BUFFER_BYTES = 64 * 1024
+private const val NAME_OFFSET = 0
+private const val NAME_LENGTH = 100
+private const val SIZE_OFFSET = 124
+private const val SIZE_LENGTH = 12
+private const val CHECKSUM_OFFSET = 148
+private const val CHECKSUM_LENGTH = 8
+private const val TYPEFLAG_OFFSET = 156
+private const val MAGIC_OFFSET = 257
+
+private const val CHECKSUM_PLACEHOLDER = ' '
