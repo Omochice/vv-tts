@@ -139,6 +139,17 @@
             export ANDROID_SDK_ROOT=$ANDROID_HOME
           ''
         );
+        # VOICEVOX CORE publishes its Java bindings only as a zipped Maven repository on GitHub releases, not on Maven Central.
+        voicevoxCoreMaven = pkgs.fetchzip {
+          url = "https://github.com/VOICEVOX/voicevox_core/releases/download/0.17.1/java_packages.zip";
+          hash = "sha256-FLnV7p9SoPmRrPVSC8yFegoDjvpQzwraDXULgyxMLqM=";
+          stripRoot = false;
+        };
+        voicevoxCoreMavenRepo = pkgs.makeSetupHook { name = "voicevox-core-maven-repo"; } (
+          pkgs.writeText "voicevox-core-maven-repo.sh" ''
+            export VOICEVOX_CORE_MAVEN_REPO=${voicevoxCoreMaven}
+          ''
+        );
         devPackages = rec {
           # keep-sorted start block=yes
           actions = with pkgs; [
@@ -150,6 +161,7 @@
             androidSdkHome
             pkgs.gradle_9
             pkgs.jdk21
+            voicevoxCoreMavenRepo
           ];
           # keep-sorted end
           default = [
