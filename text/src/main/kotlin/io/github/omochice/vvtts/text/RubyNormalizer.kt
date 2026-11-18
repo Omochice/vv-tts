@@ -9,10 +9,10 @@ private const val ANGLE_READING = """[^《》\r\n]+"""
 // The bar base excludes bars so that the nearest bar wins over an unrelated earlier one.
 private val RUBY =
     Regex(
-        """[｜|]([^《｜|\r\n]*)《($ANGLE_READING)》""" +
-            """|($KANJI+)《($ANGLE_READING)》""" +
-            """|($KANJI+)（($KANA+)）""" +
-            """|($KANJI+)\(($KANA+)\)"""
+        """[｜|]([^《｜|\r\n]*)《(?<barReading>$ANGLE_READING)》""" +
+            """|($KANJI+)《(?<angleReading>$ANGLE_READING)》""" +
+            """|(?<wideBase>$KANJI+)（(?<wideReading>$KANA+)）""" +
+            """|(?<narrowBase>$KANJI+)\((?<narrowReading>$KANA+)\)"""
     )
 
 /**
@@ -29,14 +29,21 @@ object RubyNormalizer {
    */
   fun normalize(text: String): String =
       RUBY.replace(text) { match ->
-        val groups = match.groupValues
         when {
-          match.groups[2] != null -> groups[2]
-          match.groups[4] != null -> groups[4]
-          match.groups[5] != null -> parenthesised(match.value, groups[5], groups[6])
-          else -> parenthesised(match.value, groups[7], groups[8])
+          match.groups["barReading"] != null -> match.valueOf("barReading")
+          match.groups["angleReading"] != null -> match.valueOf("angleReading")
+          match.groups["wideBase"] != null ->
+              parenthesised(match.value, match.valueOf("wideBase"), match.valueOf("wideReading"))
+          else ->
+              parenthesised(
+                  match.value,
+                  match.valueOf("narrowBase"),
+                  match.valueOf("narrowReading"),
+              )
         }
       }
+
+  private fun MatchResult.valueOf(group: String): String = groups[group]?.value.orEmpty()
 
   private fun parenthesised(original: String, base: String, reading: String): String =
       if (reading.length >= base.length) reading else original
