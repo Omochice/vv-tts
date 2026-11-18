@@ -17,6 +17,7 @@ import java.io.IOException
  *
  * It changes the stored dictionary only; the speech engine notices the change on its next
  * synthesis.
+ *
  * It asks [pronouncer] for the accents a reading offers.
  */
 internal class DictionarySection(
