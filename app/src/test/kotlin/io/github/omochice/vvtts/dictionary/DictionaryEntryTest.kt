@@ -162,6 +162,16 @@ class DictionaryEntryTest {
   }
 
   @Test
+  fun `a reading alone is checked as an entry checks it and returned in katakana`() {
+    assertEquals(ReadingCheck.Valid("エンジンエックス"), DictionaryEntry.readingOf(" えんじんえっくす "))
+    assertEquals(ReadingCheck.Invalid(EntryProblem.EMPTY_READING), DictionaryEntry.readingOf(" "))
+    assertEquals(
+        ReadingCheck.Invalid(EntryProblem.MISPLACED_SMALL_KANA),
+        DictionaryEntry.readingOf("アッッ"),
+    )
+  }
+
+  @Test
   fun `the word is checked before the reading`() {
     assertEquals(EntryProblem.EMPTY_WORD, problemOf("", ""))
   }

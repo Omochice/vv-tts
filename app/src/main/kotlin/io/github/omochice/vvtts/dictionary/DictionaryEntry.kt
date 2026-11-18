@@ -33,6 +33,13 @@ internal constructor(val word: String, val reading: String, val accent: Int) {
         EntryCheck.Invalid(problem)
       }
     }
+
+    /** Checks [reading] alone as [of] checks it, accepting hiragana or katakana. */
+    fun readingOf(reading: String): ReadingCheck {
+      val katakana = toKatakana(reading.trim())
+      return readingProblem(katakana)?.let { ReadingCheck.Invalid(it) }
+          ?: ReadingCheck.Valid(katakana)
+    }
   }
 }
 
@@ -100,6 +107,15 @@ private fun toKatakana(text: String): String =
           text[it].let { c -> if (c in 'ぁ'..'ゖ') c + HIRAGANA_TO_KATAKANA else c }
         }
     )
+
+/** The outcome of [DictionaryEntry.readingOf]. */
+sealed interface ReadingCheck {
+  /** The input is usable as [reading], in katakana. */
+  data class Valid(val reading: String) : ReadingCheck
+
+  /** The input breaks the rule [problem]. */
+  data class Invalid(val problem: EntryProblem) : ReadingCheck
+}
 
 /** The outcome of [DictionaryEntry.of]. */
 sealed interface EntryCheck {

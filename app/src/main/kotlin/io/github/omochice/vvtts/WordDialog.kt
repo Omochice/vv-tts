@@ -20,6 +20,7 @@ import java.io.IOException
  */
 internal class WordDialog(
     private val activity: Activity,
+    private val pronouncer: BackgroundPronouncer,
     private val save: (DictionaryEntry) -> Unit,
 ) {
   private var dialog: AlertDialog? = null
@@ -31,22 +32,26 @@ internal class WordDialog(
   fun show(entry: DictionaryEntry? = null) {
     val word = field(R.string.dictionary_word)
     val reading = field(R.string.dictionary_reading)
-    var accent = 0
+    val message =
+        TextView(activity).apply {
+          visibility = View.GONE
+          setTextColor(activity.getColor(android.R.color.holo_red_dark))
+        }
+    val accent =
+        AccentPicker(activity, pronouncer, { reading.text.toString() }) {
+          message.setText(it)
+          message.visibility = View.VISIBLE
+        }
     if (entry != null) {
       word.setText(entry.word)
       // Locked, because the dictionary replaces an entry by its word, so a changed word would add
       // a second entry and leave the old one behind.
       word.isEnabled = false
       reading.setText(entry.reading)
-      accent = entry.accent
     }
     // Added after filling in the entry, whose own text would otherwise reset its accent.
-    reading.addTextChangedListener(onChange { accent = 0 })
-    val message =
-        TextView(activity).apply {
-          visibility = View.GONE
-          setTextColor(activity.getColor(android.R.color.holo_red_dark))
-        }
+    reading.addTextChangedListener(onChange(accent::readingChanged))
+    entry?.let { accent.restore(it.accent) }
     val form =
         LinearLayout(activity).apply {
           orientation = LinearLayout.VERTICAL
@@ -54,6 +59,7 @@ internal class WordDialog(
           setPadding(gap, activity.dp(8), gap, 0)
           addView(word)
           addView(reading)
+          addView(accent.view)
           addView(message)
         }
     dialog?.dismiss()
@@ -70,9 +76,10 @@ internal class WordDialog(
                 null,
             )
             .setNegativeButton(R.string.button_cancel, null)
+            .setOnDismissListener { accent.close() }
             .show()
     shown.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-      val problem = submit(word.text.toString(), reading.text.toString(), accent)
+      val problem = submit(word.text.toString(), reading.text.toString(), accent.accent)
       if (problem == null) {
         shown.dismiss()
       } else {
