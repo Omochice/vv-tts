@@ -22,6 +22,7 @@ android {
 
 dependencies {
   implementation(project(":text"))
+  implementation(libs.voicevox.core)
 
   testImplementation(libs.junit)
   testImplementation(libs.kotlin.test.junit)

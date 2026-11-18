@@ -1,6 +1,7 @@
 [libraries]
 junit = { module = "junit:junit", version = "4.13.2" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+voicevox-core = { module = "jp.hiroshiba.voicevoxcore:voicevoxcore-android", version = "0.17.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
