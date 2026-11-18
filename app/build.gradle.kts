@@ -34,6 +34,7 @@ dependencies {
   implementation(libs.voicevox.core)
 
   testImplementation(libs.junit)
+  testImplementation(libs.konsist)
   testImplementation(libs.kotlin.test.junit)
 }
 

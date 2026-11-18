@@ -1,6 +1,7 @@
 [libraries]
 junit = { module = "junit:junit", version = "4.13.2" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+konsist = { module = "com.lemonappdev:konsist", version = "0.18.1" }
 voicevox-core = { module = "jp.hiroshiba.voicevoxcore:voicevoxcore-android", version = "0.17.1" }
 
 [plugins]
