@@ -294,6 +294,53 @@ class AssetInstallerTest {
   }
 
   @Test
+  fun `a fresh root has every part to download`() {
+    assertEquals(
+        ortPin.sizeBytes + dictPin.sizeBytes + voicePin.sizeBytes,
+        installer().bytesToDownload("0.vvm"),
+    )
+  }
+
+  @Test
+  fun `parts in place and archives already downloaded count for nothing`() {
+    installOnnxRuntimeByHand()
+    File(layout.downloadsDir, dictPin.fileName).create().writeBytes(dictArchive)
+
+    assertEquals(voicePin.sizeBytes, installer().bytesToDownload("0.vvm"))
+  }
+
+  @Test
+  fun `an installed voice model has nothing to download`() {
+    installer().install()
+
+    assertEquals(0, installer().bytesToDownload("0.vvm"))
+  }
+
+  @Test
+  fun `the bytes to download are the total that progress reports`() {
+    installDictionaryByHand()
+    val expected = installer().bytesToDownload("0.vvm")
+    val totals = mutableSetOf<Long>()
+
+    installer().install(onProgress = { _, total -> totals += total })
+
+    assertEquals(setOf(expected), totals)
+  }
+
+  @Test
+  fun `an ABI without an ONNX Runtime build leaves the library out of the bytes to download`() {
+    assertEquals(
+        dictPin.sizeBytes + voicePin.sizeBytes,
+        installer(abi = "mips").bytesToDownload("0.vvm"),
+    )
+  }
+
+  @Test
+  fun `the bytes to download of a voice model the catalog does not know are rejected`() {
+    assertFailsWith<IllegalArgumentException> { installer().bytesToDownload("99.vvm") }
+  }
+
+  @Test
   fun `concurrent installs into different roots never download at the same time`() {
     val inFlight = AtomicInteger()
     val maxInFlight = AtomicInteger()
