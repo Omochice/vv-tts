@@ -11,6 +11,7 @@ import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.text.RubyNormalizer
 import io.github.omochice.vvtts.text.SentenceSplitter
+import io.github.omochice.vvtts.text.limitLength
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -71,7 +72,9 @@ class VvTtsService : TextToSpeechService() {
     stopRequested.set(false)
     val text = request.charSequenceText?.toString().orEmpty()
     val prosody = Prosody.fromAndroid(request.speechRate, request.pitch)
-    val chunks = splitter.split(RubyNormalizer.normalize(text))
+    val maxLength = maxChunkLength(prosody)
+    val chunks =
+        splitter.split(RubyNormalizer.normalize(text)).flatMap { limitLength(it, maxLength) }
     val voice = resolveVoice(request.voiceName, preferredVoice.get(), currentVoices())
     logRequest(request, text, chunks, voice)
     speak(request, voice, prosody, chunks, callback)
