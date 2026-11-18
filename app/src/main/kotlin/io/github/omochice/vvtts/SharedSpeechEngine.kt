@@ -4,6 +4,7 @@ import android.content.Context
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.dictionary.DictionaryChanges
 import io.github.omochice.vvtts.dictionary.UserDictionaryFile
+import io.github.omochice.vvtts.voicevox.VoicevoxSpeechEngine
 
 /**
  * The one VOICEVOX engine of the process, created on first use and used by one thread at a time.
