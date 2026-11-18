@@ -57,7 +57,7 @@ class SettingsActivity : Activity() {
     super.onCreate(savedInstanceState)
     awaitingPermission = savedInstanceState?.getString(STATE_AWAITING_PERMISSION)
     status = TextView(this).apply { textSize = 16f }
-    terms = TermsDialog(this, catalog, layout, installer, ::requestNotificationsThenSchedule)
+    terms = TermsDialog(this, catalog, installer, ::requestNotificationsThenSchedule)
     defaultVoice = DefaultVoicePicker(this)
     voiceModelRows =
         VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }

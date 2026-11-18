@@ -29,12 +29,9 @@
     <string name="voice_model_name">「%1$s」の音声モデル</string>
 
     <string name="terms_title">利用規約</string>
-    <string name="terms_loading">利用規約を取得しています…</string>
-    <string name="terms_error">利用規約を取得できませんでした。ネットワークへの接続を確かめてください。</string>
     <string name="terms_download_size">ダウンロードするデータの合計：%s</string>
     <string name="terms_onnx_runtime_heading">VOICEVOX ONNX Runtime</string>
     <string name="terms_agree">同意してダウンロード</string>
-    <string name="terms_retry">再試行</string>
     <string name="terms_cancel">キャンセル</string>
     <string name="terms_close">閉じる</string>
 
