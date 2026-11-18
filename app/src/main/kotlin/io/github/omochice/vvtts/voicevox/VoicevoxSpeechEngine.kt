@@ -96,7 +96,8 @@ class VoicevoxSpeechEngine(
       Log.i(
           TAG,
           "user dictionary entries=${entries.size} words=${words.size} " +
-              "applied=${words.size - failures.size} skipped=${failures.size} " +
+              "applied=${words.size - failures.size} flattened=${built.flattened} " +
+              "skipped=${failures.size} " +
               "skippedBecause=${failures.distinct()}",
       )
     } catch (e: Exception) {
