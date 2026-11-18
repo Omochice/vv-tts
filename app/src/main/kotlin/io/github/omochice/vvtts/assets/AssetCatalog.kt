@@ -48,12 +48,26 @@ class AssetCatalog(
       val voicesByModel =
           readTable(voices, VOICE_COLUMNS)
               .groupBy(
-                  { it[0] },
-                  { Voice(character = it[1], style = it[2], styleId = it[3].toInt()) },
+                  { it.getValue("file_name") },
+                  {
+                    Voice(
+                        character = it.getValue("character"),
+                        style = it.getValue("style"),
+                        styleId = it.getValue("style_id").toInt(),
+                    )
+                  },
               )
       val entries =
           readTable(assets, ASSET_COLUMNS).map { row ->
-            classify(release = row[0], RemoteFile(row[1], row[4], row[2].toLong(), row[3]))
+            classify(
+                release = row.getValue("release"),
+                RemoteFile(
+                    fileName = row.getValue("file_name"),
+                    url = row.getValue("url"),
+                    sizeBytes = row.getValue("size_bytes").toLong(),
+                    sha256 = row.getValue("sha256"),
+                ),
+            )
           }
       val dictionaries = entries.filterIsInstance<Entry.Dictionary>()
       require(dictionaries.size == 1) { "expected one dictionary, found ${dictionaries.size}" }
@@ -77,13 +91,15 @@ class AssetCatalog(
       )
     }
 
-    private fun readTable(text: Reader, columns: List<String>): List<List<String>> {
+    private fun readTable(text: Reader, columns: List<String>): List<Map<String, String>> {
       val lines = text.readLines()
       require(lines.firstOrNull()?.split('\t') == columns) {
         "expected columns $columns, found ${lines.firstOrNull()}"
       }
       return lines.drop(1).map { line ->
-        line.split('\t').also { require(it.size == columns.size) { "malformed row: $line" } }
+        val fields = line.split('\t')
+        require(fields.size == columns.size) { "malformed row: $line" }
+        columns.zip(fields).toMap()
       }
     }
 
