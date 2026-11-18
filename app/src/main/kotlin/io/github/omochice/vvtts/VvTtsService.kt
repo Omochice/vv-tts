@@ -70,10 +70,11 @@ class VvTtsService : TextToSpeechService() {
   override fun onSynthesizeText(request: SynthesisRequest, callback: SynthesisCallback) {
     stopRequested.set(false)
     val text = request.charSequenceText?.toString().orEmpty()
+    val prosody = Prosody.fromAndroid(request.speechRate, request.pitch)
     val chunks = splitter.split(RubyNormalizer.normalize(text))
     val voice = resolveVoice(request.voiceName, preferredVoice.get(), currentVoices())
     logRequest(request, text, chunks, voice)
-    speak(request, voice, chunks, callback)
+    speak(request, voice, prosody, chunks, callback)
     // Without done(), the framework never tells the client about an error raised before start().
     callback.done()
   }
@@ -86,6 +87,7 @@ class VvTtsService : TextToSpeechService() {
   private fun speak(
       request: SynthesisRequest,
       voice: SpeakableVoice?,
+      prosody: Prosody,
       chunks: List<String>,
       callback: SynthesisCallback,
   ) {
@@ -114,7 +116,7 @@ class VvTtsService : TextToSpeechService() {
       loop.run(
           chunks,
           voice,
-          Prosody.fromAndroid(request.speechRate, request.pitch),
+          prosody,
           CallbackSink(callback),
       ) {
         stopRequested.get()
