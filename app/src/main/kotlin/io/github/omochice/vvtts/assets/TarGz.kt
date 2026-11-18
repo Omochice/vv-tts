@@ -11,10 +11,6 @@ import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
 import java.util.zip.ZipException
 
-/** Signals an archive that does not have the exact shape the pinned archives are known to have. */
-class MalformedArchiveException(message: String, cause: Throwable? = null) :
-    IOException(message, cause)
-
 /**
  * Extracts a gzipped GNU tar archive whose entries all sit under one top-level directory, placing
  * that directory's contents directly under [destination].
