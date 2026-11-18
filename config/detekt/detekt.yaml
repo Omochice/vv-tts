@@ -1,0 +1,41 @@
+# Only the settings that differ from the default configuration, which the build loads underneath.
+
+comments:
+  UndocumentedPublicClass:
+    active: true
+    # A companion object without a name is a holder for its members, which carry the documentation.
+    # Documenting it as well would only repeat the documentation of its class.
+    ignoreDefaultCompanionObject: true
+  UndocumentedPublicFunction:
+    active: true
+  UndocumentedPublicProperty:
+    active: true
+
+complexity:
+  LongParameterList:
+    # Parameters with defaults are the Kotlin replacement for a builder, and callers name the ones
+    # they override.
+    # Counting them would push such functions towards a builder, which the defaults made unnecessary.
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    # The Android framework dictates the callbacks a service or an activity overrides.
+    # Counting them would push their handling into separate classes for the sake of the count.
+    ignoreOverridden: true
+
+style:
+  MagicNumber:
+    # The rule cannot tell a number that reads fine in place, such as a buffer size or a padding in
+    # dp, from one that needs a name.
+    # Keeping it on would force a constant for every literal, which adds indirection without telling
+    # the reader anything, so whether a number deserves a name is left to review.
+    active: false
+  ReturnCount:
+    # Functions here return one result variant per outcome as soon as the outcome is known.
+    # Holding the result in a variable until a single exit would nest the remaining steps under
+    # conditions, and NestedBlockDepth already limits that nesting.
+    active: false
+  ThrowsCount:
+    # Functions here throw as soon as a step fails, with a message naming that step, such as each
+    # malformation a parser of downloaded files rejects.
+    # Merging the throws to meet a count would lose which step failed.
+    active: false
