@@ -101,11 +101,11 @@ class SettingsActivity : Activity() {
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
-    menu.add(R.string.button_terms).setOnMenuItemClickListener {
+    menu.add(R.string.menu_terms).setOnMenuItemClickListener {
       terms.show(forVoiceModel = null)
       true
     }
-    menu.add(R.string.button_licenses).setOnMenuItemClickListener {
+    menu.add(R.string.menu_licenses).setOnMenuItemClickListener {
       startActivity(Intent(this, LicensesActivity::class.java))
       true
     }

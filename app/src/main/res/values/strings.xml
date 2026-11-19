@@ -15,8 +15,8 @@
     <string name="failure_unsupported_device">この端末のCPUには対応していません。</string>
 
     <string name="button_download">ダウンロード</string>
-    <string name="button_terms">利用規約</string>
-    <string name="button_licenses">ライセンス</string>
+    <string name="menu_terms">利用規約</string>
+    <string name="menu_licenses">ライセンス</string>
     <string name="schedule_failed">ダウンロードを始められませんでした。</string>
 
     <string name="default_voice_heading">デフォルトの声</string>
