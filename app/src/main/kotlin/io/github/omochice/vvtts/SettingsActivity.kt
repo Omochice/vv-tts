@@ -2,6 +2,7 @@ package io.github.omochice.vvtts
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -23,7 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Lets the user download voice models after agreeing to their terms, choose the default voice, read
- * the terms again later, and keep a dictionary of how words are read.
+ * the terms again later, open the licenses of the libraries the app carries, and keep a dictionary
+ * of how words are read.
  */
 class SettingsActivity : Activity() {
   private val catalog by lazy { AssetCatalog.bundled }
@@ -75,13 +77,25 @@ class SettingsActivity : Activity() {
           setText(R.string.button_terms)
           setOnClickListener { terms.show(forVoiceModel = null) }
         }
+    val licensesButton =
+        Button(this).apply {
+          setText(R.string.button_licenses)
+          setOnClickListener {
+            startActivity(Intent(this@SettingsActivity, LicensesActivity::class.java))
+          }
+        }
     val content =
         LinearLayout(this).apply {
           orientation = LinearLayout.VERTICAL
           val gap = dp(16)
           setPadding(gap, gap, gap, gap)
           addView(status)
-          addView(termsButton)
+          addView(
+              LinearLayout(this@SettingsActivity).apply {
+                addView(termsButton)
+                addView(licensesButton)
+              }
+          )
           addView(defaultVoice.view)
           addView(dictionary.view)
           addView(headingView(getString(R.string.voice_models_heading)))

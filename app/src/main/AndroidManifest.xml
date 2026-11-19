@@ -54,6 +54,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".LicensesActivity"
+            android:exported="false"
+            android:label="@string/licenses_title"
+            android:theme="@android:style/Theme.DeviceDefault.DayNight" />
+
     </application>
 
 </manifest>
