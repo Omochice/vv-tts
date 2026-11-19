@@ -10,9 +10,6 @@ import io.github.omochice.vvtts.TAG
 import io.github.omochice.vvtts.WordPronouncer
 import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.dictionary.DictionaryChanges
-import io.github.omochice.vvtts.dictionary.kanaWithoutLongVowels
-import io.github.omochice.vvtts.dictionary.markAccent
-import io.github.omochice.vvtts.dictionary.moraPieces
 import io.github.omochice.vvtts.dictionary.wordsToRegister
 import java.io.File
 import jp.hiroshiba.voicevoxcore.blocking.Onnxruntime

@@ -1,4 +1,4 @@
-package io.github.omochice.vvtts.dictionary
+package io.github.omochice.vvtts.voicevox
 
 private const val LONG_VOWEL = 'ー'
 private const val ACCENT_MARK = '\''
@@ -20,7 +20,7 @@ private val VOWEL_OF: Map<Char, Char> =
  *
  * Returns null when a ー follows nothing, ン or ッ, which have no vowel to lengthen.
  */
-fun kanaWithoutLongVowels(reading: String): String? {
+internal fun kanaWithoutLongVowels(reading: String): String? {
   val kana = StringBuilder(reading.length)
   for (char in reading) {
     if (char == LONG_VOWEL) {
@@ -44,7 +44,7 @@ fun kanaWithoutLongVowels(reading: String): String? {
  * Returns null when [accent] is outside 0 to the number of moras, or when [moraLengths] do not
  * cover [kana] exactly.
  */
-fun markAccent(kana: String, moraLengths: List<Int>, accent: Int): String? {
+internal fun markAccent(kana: String, moraLengths: List<Int>, accent: Int): String? {
   if (!covers(moraLengths, kana) || accent !in 0..moraLengths.size) return null
   val position = if (accent == 0) kana.length else moraLengths.take(accent).sum()
   return kana.substring(0, position) + ACCENT_MARK + kana.substring(position)
@@ -54,7 +54,7 @@ fun markAccent(kana: String, moraLengths: List<Int>, accent: Int): String? {
  * Returns [reading] cut into consecutive pieces of [lengths] characters, or null when [lengths] do
  * not cover [reading] exactly.
  */
-fun moraPieces(reading: String, lengths: List<Int>): List<String>? {
+internal fun moraPieces(reading: String, lengths: List<Int>): List<String>? {
   if (!covers(lengths, reading)) return null
   val starts = lengths.runningFold(0, Int::plus)
   return lengths.indices.map { reading.substring(starts[it], starts[it + 1]) }
