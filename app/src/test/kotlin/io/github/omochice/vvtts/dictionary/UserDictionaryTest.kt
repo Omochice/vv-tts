@@ -14,9 +14,6 @@ class UserDictionaryTest {
 
   private fun dictionary() = UserDictionary(file())
 
-  private fun entry(word: String, reading: String) =
-      (DictionaryEntry.of(word, reading) as EntryCheck.Valid).entry
-
   @Test
   fun `the file lives directly under the given directory`() {
     assertEquals(File(tmp.root, "user-dictionary.tsv"), file().path)
@@ -55,68 +52,68 @@ class UserDictionaryTest {
 
   @Test
   fun `an added entry is listed and stored`() {
-    dictionary().add(entry("nginx", "エンジンエックス"))
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
 
-    assertEquals(listOf(entry("nginx", "エンジンエックス")), dictionary().entries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエックス")), dictionary().entries())
     assertEquals("nginx\tエンジンエックス\t0\n", file().read())
   }
 
   @Test
   fun `entries are listed in the order of their words whatever order they were added in`() {
-    dictionary().add(entry("node.js", "ノードジェイエス"))
-    dictionary().add(entry("Apache", "アパッチ"))
-    dictionary().add(entry("nginx", "エンジンエックス"))
+    dictionary().add(validEntry("node.js", "ノードジェイエス"))
+    dictionary().add(validEntry("Apache", "アパッチ"))
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
 
     assertEquals(listOf("Apache", "nginx", "node.js"), dictionary().entries().map { it.word })
   }
 
   @Test
   fun `adding a word that exists replaces its reading`() {
-    dictionary().add(entry("nginx", "エンジンエックス"))
-    dictionary().add(entry("nginx", "エンジンエクス"))
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
+    dictionary().add(validEntry("nginx", "エンジンエクス"))
 
-    assertEquals(listOf(entry("nginx", "エンジンエクス")), dictionary().entries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエクス")), dictionary().entries())
   }
 
   @Test
   fun `adding a word that differs only in ASCII case replaces the existing one`() {
-    dictionary().add(entry("nginx", "エンジンエックス"))
-    dictionary().add(entry("Nginx", "エンジンエクス"))
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
+    dictionary().add(validEntry("Nginx", "エンジンエクス"))
 
-    assertEquals(listOf(entry("Nginx", "エンジンエクス")), dictionary().entries())
+    assertEquals(listOf(validEntry("Nginx", "エンジンエクス")), dictionary().entries())
   }
 
   @Test
   fun `removing a word drops only that entry`() {
-    dictionary().add(entry("nginx", "エンジンエックス"))
-    dictionary().add(entry("node.js", "ノードジェイエス"))
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
+    dictionary().add(validEntry("node.js", "ノードジェイエス"))
 
-    dictionary().remove(entry("nginx", "エンジンエックス"))
+    dictionary().remove(validEntry("nginx", "エンジンエックス"))
 
-    assertEquals(listOf(entry("node.js", "ノードジェイエス")), dictionary().entries())
+    assertEquals(listOf(validEntry("node.js", "ノードジェイエス")), dictionary().entries())
   }
 
   @Test
   fun `removing a word that is not stored changes nothing`() {
-    dictionary().add(entry("nginx", "エンジンエックス"))
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
 
-    dictionary().remove(entry("apache", "アパッチ"))
+    dictionary().remove(validEntry("apache", "アパッチ"))
 
-    assertEquals(listOf(entry("nginx", "エンジンエックス")), dictionary().entries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエックス")), dictionary().entries())
   }
 
   @Test
   fun `a file edited by hand with invalid lines lists only the valid ones`() {
     file().write("\tエンジン\nnginx\tエンジンエックス\nbad\tbad\n")
 
-    assertEquals(listOf(entry("nginx", "エンジンエックス")), dictionary().entries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエックス")), dictionary().entries())
   }
 
   @Test
   fun `adding to a file with invalid lines drops them from the file`() {
     file().write("bad\tbad\nnginx\tエンジンエックス\n")
 
-    dictionary().add(entry("node.js", "ノードジェイエス"))
+    dictionary().add(validEntry("node.js", "ノードジェイエス"))
 
     assertTrue("bad" !in file().read())
   }

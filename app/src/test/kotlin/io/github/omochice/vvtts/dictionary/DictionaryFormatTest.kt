@@ -4,15 +4,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DictionaryFormatTest {
-  private fun entry(word: String, reading: String, accent: Int = 0) =
-      (DictionaryEntry.of(word, reading, accent) as EntryCheck.Valid).entry
-
   @Test
   fun `each entry is one line of the word, the reading and the accent separated by tabs`() {
     assertEquals(
         "nginx\tエンジンエックス\t5\nnode.js\tノードジェイエス\t0\n",
         DictionaryFormat.encode(
-            listOf(entry("nginx", "エンジンエックス", 5), entry("node.js", "ノードジェイエス"))
+            listOf(validEntry("nginx", "エンジンエックス", 5), validEntry("node.js", "ノードジェイエス"))
         ),
     )
   }
@@ -24,7 +21,7 @@ class DictionaryFormatTest {
 
   @Test
   fun `encoded entries decode to the same entries`() {
-    val entries = listOf(entry("hello world", "ハローワールド"), entry("nginx", "エンジンエックス", 5))
+    val entries = listOf(validEntry("hello world", "ハローワールド"), validEntry("nginx", "エンジンエックス", 5))
 
     assertEquals(entries, DictionaryFormat.decode(DictionaryFormat.encode(entries)))
   }
@@ -59,14 +56,17 @@ class DictionaryFormatTest {
     val text = "\n\nnginx\tエンジンエックス\r\n\nnode.js\tノードジェイエス"
 
     assertEquals(
-        listOf(entry("nginx", "エンジンエックス"), entry("node.js", "ノードジェイエス")),
+        listOf(validEntry("nginx", "エンジンエックス"), validEntry("node.js", "ノードジェイエス")),
         DictionaryFormat.decode(text),
     )
   }
 
   @Test
   fun `a line of only the word and the reading, as files without accents have, is flat`() {
-    assertEquals(entry("nginx", "エンジンエックス"), DictionaryFormat.decode("nginx\tエンジンエックス\n").single())
+    assertEquals(
+        validEntry("nginx", "エンジンエックス"),
+        DictionaryFormat.decode("nginx\tエンジンエックス\n").single(),
+    )
   }
 
   @Test
@@ -99,6 +99,6 @@ class DictionaryFormatTest {
   fun `of lines whose words differ only in ASCII case, the last one wins`() {
     val decoded = DictionaryFormat.decode("nginx\tエンジンエックス\nNGINX\tンギンクス\n")
 
-    assertEquals(listOf(entry("NGINX", "ンギンクス")), decoded)
+    assertEquals(listOf(validEntry("NGINX", "ンギンクス")), decoded)
   }
 }
