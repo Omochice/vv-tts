@@ -1,0 +1,11 @@
+{
+  "uniqueId": "r9y9:open_jtalk_dic_utf_8",
+  "artifactVersion": "1.11",
+  "name": "Open JTalk dictionary",
+  "description": "Downloaded on the device from the r9y9/open_jtalk v1.11.1 release; not bundled in the APK.",
+  "developers": [],
+  "website": "https://github.com/r9y9/open_jtalk/releases/tag/v1.11.1",
+  "licenses": [
+    "BSD-3-Clause-open_jtalk_dic"
+  ]
+}
