@@ -91,7 +91,7 @@ class UserDictionaryTest {
     dictionary().add(entry("nginx", "エンジンエックス"))
     dictionary().add(entry("node.js", "ノードジェイエス"))
 
-    dictionary().remove("nginx")
+    dictionary().remove(entry("nginx", "エンジンエックス"))
 
     assertEquals(listOf(entry("node.js", "ノードジェイエス")), dictionary().entries())
   }
@@ -100,7 +100,7 @@ class UserDictionaryTest {
   fun `removing a word that is not stored changes nothing`() {
     dictionary().add(entry("nginx", "エンジンエックス"))
 
-    dictionary().remove("apache")
+    dictionary().remove(entry("apache", "アパッチ"))
 
     assertEquals(listOf(entry("nginx", "エンジンエックス")), dictionary().entries())
   }

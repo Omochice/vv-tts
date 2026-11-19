@@ -106,7 +106,7 @@ internal class DictionarySection(
 
   private fun remove(entry: DictionaryEntry) {
     try {
-      dictionary.remove(entry.word)
+      dictionary.remove(entry)
     } catch (_: IOException) {
       Toast.makeText(activity, R.string.dictionary_save_failed, Toast.LENGTH_LONG).show()
     }
