@@ -21,22 +21,15 @@ enum class FailureReason {
   UNSUPPORTED_DEVICE,
 }
 
-/**
- * Returns why [failure] happened.
- *
- * @throws IllegalArgumentException if [failure] carries a download result that is not a failure.
- */
+/** Returns why [failure] happened. */
 fun failureReasonOf(failure: InstallResult.Failure): FailureReason =
     when (failure) {
       is InstallResult.NoOnnxRuntimeFor -> FailureReason.UNSUPPORTED_DEVICE
       is InstallResult.PlacementFailed -> FailureReason.STORAGE
       is InstallResult.DownloadFailed ->
-          when (val result = failure.result) {
+          when (failure.result) {
             is DownloadResult.TransferFailed -> FailureReason.TRANSFER
             is DownloadResult.UnexpectedStatus -> FailureReason.SERVER
             DownloadResult.Corrupt -> FailureReason.CORRUPT
-            DownloadResult.Installed,
-            DownloadResult.Stopped ->
-                throw IllegalArgumentException("$result is not a download failure")
           }
     }

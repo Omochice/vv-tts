@@ -6,12 +6,12 @@ import io.github.omochice.vvtts.assets.RemoteFile
 import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class FailureReasonTest {
   private val file = RemoteFile("0.vvm", "https://example.invalid/0.vvm", 1, "0".repeat(64))
 
-  private fun downloadFailed(result: DownloadResult) = InstallResult.DownloadFailed(file, result)
+  private fun downloadFailed(result: DownloadResult.Failure) =
+      InstallResult.DownloadFailed(file, result)
 
   @Test
   fun `a transfer that broke off is a transfer failure`() {
@@ -48,15 +48,5 @@ class FailureReasonTest {
         FailureReason.UNSUPPORTED_DEVICE,
         failureReasonOf(InstallResult.NoOnnxRuntimeFor("mips")),
     )
-  }
-
-  @Test
-  fun `a download failure carrying a successful download result is rejected`() {
-    assertFailsWith<IllegalArgumentException> {
-      failureReasonOf(downloadFailed(DownloadResult.Installed))
-    }
-    assertFailsWith<IllegalArgumentException> {
-      failureReasonOf(downloadFailed(DownloadResult.Stopped))
-    }
   }
 }
