@@ -16,7 +16,7 @@ internal const val TAG = "VvTts"
 
 /** The system text-to-speech engine that reads Japanese text aloud. */
 class VvTtsService : TextToSpeechService() {
-  private val catalog by lazy { AssetCatalog.load() }
+  private val catalog by lazy { AssetCatalog.bundled }
   private val layout by lazy { AssetLayout(filesDir) }
   private val preferredVoice by lazy { PreferredVoiceStore(this) }
   private val stopRequested = AtomicBoolean(false)

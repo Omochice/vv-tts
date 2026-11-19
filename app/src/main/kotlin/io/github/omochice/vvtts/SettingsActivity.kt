@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * the terms again later, and keep a dictionary of how words are read.
  */
 class SettingsActivity : Activity() {
-  private val catalog by lazy { AssetCatalog.load() }
+  private val catalog by lazy { AssetCatalog.bundled }
   private val layout by lazy { AssetLayout(filesDir) }
   private val installer by lazy {
     AssetInstaller(catalog, layout, Build.SUPPORTED_ABIS.first())
