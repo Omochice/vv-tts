@@ -8,6 +8,7 @@ voicevox-core = { module = "jp.hiroshiba.voicevoxcore:voicevoxcore-android", ver
 android-application = { id = "com.android.application", version.ref = "agp" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version = "1.23.8" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version = "0.9.11" }
 
 [versions]
 agp = "9.5.1"
