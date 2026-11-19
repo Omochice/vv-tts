@@ -22,7 +22,7 @@
   ],
   packageRules: [
     {
-      description: "A VOICEVOX release also needs _sources/ regenerated and assets.tsv updated by hand, so its pull request must wait for a person even when the shared preset would merge it",
+      description: "A VOICEVOX release also needs _sources/ regenerated, assets.tsv updated and the license entries under config/ checked by hand, so its pull request must wait for a person even when the shared preset would merge it",
       matchFileNames: [
         "nvfetcher.toml",
       ],
