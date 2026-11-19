@@ -1,5 +1,6 @@
-package io.github.omochice.vvtts
+package io.github.omochice.vvtts.voicevox
 
+import io.github.omochice.vvtts.SpeechEngine
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
