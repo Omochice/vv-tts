@@ -11,14 +11,11 @@ class DictionaryChangesTest {
 
   private val file by lazy { UserDictionaryFile(tmp.root) }
 
-  private fun entry(word: String, reading: String) =
-      (DictionaryEntry.of(word, reading) as EntryCheck.Valid).entry
-
   @Test
   fun `the first look returns the stored entries`() {
     file.write("nginx\tエンジンエックス\n")
 
-    assertEquals(listOf(entry("nginx", "エンジンエックス")), DictionaryChanges(file).changedEntries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエックス")), DictionaryChanges(file).changedEntries())
   }
 
   @Test
@@ -40,9 +37,9 @@ class DictionaryChangesTest {
     val changes = DictionaryChanges(file)
     changes.changedEntries()
 
-    UserDictionary(file).add(entry("nginx", "エンジンエックス"))
+    UserDictionary(file).add(validEntry("nginx", "エンジンエックス"))
 
-    assertEquals(listOf(entry("nginx", "エンジンエックス")), changes.changedEntries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエックス")), changes.changedEntries())
   }
 
   @Test
@@ -55,7 +52,7 @@ class DictionaryChangesTest {
     file.write("nginx\tエンジンエクスス\n")
     file.path.setLastModified(modified)
 
-    assertEquals(listOf(entry("nginx", "エンジンエクスス")), changes.changedEntries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエクスス")), changes.changedEntries())
   }
 
   @Test
@@ -77,6 +74,6 @@ class DictionaryChangesTest {
 
     file.write("nginx\tエンジンエックス\nbad\tbad\n")
 
-    assertEquals(listOf(entry("nginx", "エンジンエックス")), changes.changedEntries())
+    assertEquals(listOf(validEntry("nginx", "エンジンエックス")), changes.changedEntries())
   }
 }
