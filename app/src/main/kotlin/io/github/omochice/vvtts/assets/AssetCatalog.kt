@@ -29,6 +29,13 @@ class AssetCatalog(
 
   companion object {
     /**
+     * The catalog bundled with the app, read by [load] once per process.
+     *
+     * @throws IllegalArgumentException on access if the bundled tables are inconsistent.
+     */
+    val bundled: AssetCatalog by lazy { load() }
+
+    /**
      * Reads the catalog bundled with the app.
      *
      * @throws IllegalArgumentException if the bundled tables are inconsistent, as [parse] does.

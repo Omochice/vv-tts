@@ -66,7 +66,7 @@ class AssetDownloadJobService : JobService() {
   ) {
     val isStopRequested = { stop.count == 0L }
     val installer =
-        AssetInstaller(AssetCatalog.load(), AssetLayout(filesDir), Build.SUPPORTED_ABIS.first())
+        AssetInstaller(AssetCatalog.bundled, AssetLayout(filesDir), Build.SUPPORTED_ABIS.first())
     // Retried within the run rather than through jobFinished(params, true), because a job
     // rescheduled that way was seen never to run again although all its constraints were met.
     val result =
