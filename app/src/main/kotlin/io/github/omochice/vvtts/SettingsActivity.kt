@@ -175,11 +175,7 @@ class SettingsActivity : Activity() {
 
   // The default voice, because the preview should sound like what clients get unless they choose.
   private fun previewVoice(): SpeakableVoice? =
-      resolveVoice(
-          null,
-          PreferredVoiceStore(this).get(),
-          installedVoices(catalog.voiceModels, layout),
-      )
+      PreferredVoiceStore(this).defaultAmong(installedVoices(catalog.voiceModels, layout))
 
   private fun describe(current: SettingsStatus): String =
       when (current) {
