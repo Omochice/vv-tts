@@ -24,6 +24,7 @@ internal class AccentPicker(
     private val readingProblem: (Int) -> Unit,
 ) {
   private val voice = pronouncer.voice()
+  private val idleNote = if (voice == null) R.string.accent_needs_voice else R.string.accent_note
   private val list = AccentChoiceDialog(activity, pronouncer)
 
   /** Null while the user has not chosen, which is stored as flat. */
@@ -65,12 +66,8 @@ internal class AccentPicker(
     get() = chosen ?: 0
 
   init {
-    if (voice == null) {
-      button.isEnabled = false
-      note.setText(R.string.accent_needs_voice)
-    } else {
-      note.setText(R.string.accent_note)
-    }
+    if (voice == null) button.isEnabled = false
+    resetNote()
     render()
   }
 
@@ -92,7 +89,7 @@ internal class AccentPicker(
     chosen = null
     known = null
     setBusy(false)
-    if (voice != null) note.setText(R.string.accent_note)
+    resetNote()
     render()
   }
 
@@ -117,7 +114,7 @@ internal class AccentPicker(
     val voice = voice ?: return
     val token = ++generation
     setBusy(true)
-    if (thenOpen) note.setText(R.string.accent_note)
+    if (thenOpen) resetNote()
     pronouncer.run({ it.accentChoices(reading, voice) }) { result ->
       if (token != generation) return@run
       setBusy(false)
@@ -148,8 +145,11 @@ internal class AccentPicker(
     button.setText(if (busy) R.string.button_preparing else R.string.button_choose)
   }
 
+  private fun resetNote() {
+    note.setText(idleNote)
+  }
+
   private fun render() {
-    val accent = chosen ?: 0
     val moras = known?.choices?.moras
     val shown =
         when {
