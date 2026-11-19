@@ -15,7 +15,7 @@ class CheckVoiceDataActivity : Activity() {
     super.onCreate(savedInstanceState)
     // Settings compares "jpn-JPN" verbatim against the default locale, so the
     // ISO 639-2/3166 alpha-3 spelling is required rather than a BCP 47 tag.
-    val voices = arrayListOf("jpn", "jpn-JPN")
+    val voices = arrayListOf(JAPANESE, "$JAPANESE-$JAPAN")
     val installed =
         installedVoices(AssetCatalog.load().voiceModels, AssetLayout(filesDir)).isNotEmpty()
     setResult(

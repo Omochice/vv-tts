@@ -2,8 +2,8 @@ package io.github.omochice.vvtts
 
 import android.speech.tts.TextToSpeech
 
-private const val JAPANESE = "jpn"
-private const val JAPAN = "JPN"
+internal const val JAPANESE = "jpn"
+internal const val JAPAN = "JPN"
 
 /** How closely a requested locale matches what this engine can speak. */
 enum class LanguageSupport {

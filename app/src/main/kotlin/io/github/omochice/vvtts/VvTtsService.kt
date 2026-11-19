@@ -28,7 +28,7 @@ class VvTtsService : TextToSpeechService() {
   override fun onLoadLanguage(lang: String?, country: String?, variant: String?): Int =
       onIsLanguageAvailable(lang, country, variant)
 
-  override fun onGetLanguage(): Array<String> = arrayOf("jpn", "JPN", "")
+  override fun onGetLanguage(): Array<String> = arrayOf(JAPANESE, JAPAN, "")
 
   override fun onGetVoices(): List<Voice> =
       currentVoices().map {
