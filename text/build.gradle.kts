@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.detekt)
+  alias(libs.plugins.kover)
 }
 
 // The target is set directly instead of through jvmToolchain.
@@ -25,6 +26,9 @@ dependencies {
 tasks.test {
   useJUnitPlatform()
 }
+
+// Named after the app's custom variant, which merges this one into its report.
+kover { currentProject { createVariant("merged") { add("jvm") } } }
 
 detekt {
   buildUponDefaultConfig = true

@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.detekt)
+  alias(libs.plugins.kover)
 }
 
 android {
@@ -46,6 +47,16 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.konsist)
   testImplementation(libs.kotlin.test.junit)
+
+  kover(project(":text"))
+}
+
+// Kover merges a dependency's variant only when its name and origin match.
+// :text is a JVM module and cannot offer the Android-origin debug variant.
+// So both modules define this custom variant instead.
+kover {
+  currentProject { createVariant("merged") { add("debug") } }
+  reports { variant("merged") { xml { onCheck = true } } }
 }
 
 detekt {
