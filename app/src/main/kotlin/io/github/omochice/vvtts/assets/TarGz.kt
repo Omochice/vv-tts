@@ -34,8 +34,10 @@ fun extractTarGz(input: InputStream, destination: File) {
   try {
     // GZIPInputStream can throw from its constructor, before there is a wrapper to close.
     input.use {
-      // DataInputStream rather than InputStream.readNBytes, which Android only has from API 33.
-       DataInputStream(GZIPInputStream(input, 64 * 1024)).use { tar ->
+      // DataInputStream rather than InputStream.readNBytes, because readFully reports a truncated
+      // archive as EOFException while readNBytes returns a short count that each read would have
+      // to check.
+      DataInputStream(GZIPInputStream(input, 64 * 1024)).use { tar ->
         extractEntries(tar, destination)
         readToEnd(tar)
       }
