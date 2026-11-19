@@ -130,15 +130,15 @@
             buildToolsVersions = [ "36.0.0" ];
             includeCmake = false;
           }).androidsdk;
-        # A setup hook keeps ANDROID_HOME next to the SDK it points at.
-        # Setting it on mkShell would pull the SDK into every dev shell, including the ones that only lint.
-        androidSdkHome = pkgs.makeSetupHook { name = "android-sdk-home"; } (
-          pkgs.writeText "android-sdk-home.sh" ''
-            export ANDROID_HOME=${androidSdk}/libexec/android-sdk
-            # The Android Gradle plugin refuses to build when this names another SDK, and GitHub's runners set it to their own.
-            export ANDROID_SDK_ROOT=$ANDROID_HOME
-          ''
-        );
+        # A setup hook keeps a variable next to the store path it points at.
+        # Setting it on mkShell would pull that path into every dev shell, including the ones that only lint.
+        exportInDevShell =
+          name: value:
+          pkgs.makeSetupHook { name = "export-${name}"; } (
+            pkgs.writeText "export-${name}.sh" ''
+              export ${name}=${value}
+            ''
+          );
         sources = pkgs.callPackage ./_sources/generated.nix { };
         # VOICEVOX CORE publishes its Java bindings only as a zipped Maven repository on GitHub releases, not on Maven Central.
         # Not fetched with nvfetcher's fetch.tarball, because it strips the single top-level directory jp/, which is part of the Maven layout.
@@ -148,11 +148,6 @@
             ''
               unzip -q ${sources.voicevox-core-java-packages.src} -d $out
             '';
-        voicevoxCoreMavenRepo = pkgs.makeSetupHook { name = "voicevox-core-maven-repo"; } (
-          pkgs.writeText "voicevox-core-maven-repo.sh" ''
-            export VOICEVOX_CORE_MAVEN_REPO=${voicevoxCoreMaven}
-          ''
-        );
         # Laid out as a Java resources root, so that Gradle adds it as a source directory instead of copying files by path.
         termsResources =
           let
@@ -179,11 +174,6 @@
               cp ${sources.voicevox-vvm-terms.src} "$dir/TERMS.txt"
               tar -xzOf ${onnxRuntime.src} ${archiveName}/TERMS.txt >"$dir/ONNXRUNTIME_TERMS.txt"
             '';
-        termsResourcesRoot = pkgs.makeSetupHook { name = "vv-tts-terms-resources"; } (
-          pkgs.writeText "vv-tts-terms-resources.sh" ''
-            export VV_TTS_TERMS_RESOURCES=${termsResources}
-          ''
-        );
         devPackages = rec {
           # keep-sorted start block=yes
           actions = with pkgs; [
@@ -192,11 +182,13 @@
             zizmor
           ];
           android = [
-            androidSdkHome
+            (exportInDevShell "ANDROID_HOME" "${androidSdk}/libexec/android-sdk")
+            # The Android Gradle plugin refuses to build when this names another SDK, and GitHub's runners set it to their own.
+            (exportInDevShell "ANDROID_SDK_ROOT" "${androidSdk}/libexec/android-sdk")
+            (exportInDevShell "VOICEVOX_CORE_MAVEN_REPO" voicevoxCoreMaven)
+            (exportInDevShell "VV_TTS_TERMS_RESOURCES" termsResources)
             pkgs.gradle_9
             pkgs.jdk21
-            termsResourcesRoot
-            voicevoxCoreMavenRepo
           ];
           # keep-sorted end
           default = [
