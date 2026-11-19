@@ -19,10 +19,9 @@ class UserDictionary(private val file: UserDictionaryFile) {
     store(entries().filter { it.key != entry.key } + entry)
   }
 
-  /** Removes the entry of [word], if there is one. */
-  fun remove(word: String) {
-    val key = word.lowercaseAscii()
-    store(entries().filter { it.key != key })
+  /** Removes the entry of the same word as [entry], if there is one. */
+  fun remove(entry: DictionaryEntry) {
+    store(entries().filter { it.key != entry.key })
   }
 
   private fun store(entries: List<DictionaryEntry>) {
