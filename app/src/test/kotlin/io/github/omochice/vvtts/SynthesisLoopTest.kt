@@ -10,11 +10,19 @@ class SynthesisLoopTest {
   private val neutralProsody = Prosody(speedScale = 1.0, pitchScale = 0.0)
   private val defaultVoice = SpeakableVoice("ずんだもん（ノーマル）", "0.vvm", 3)
 
-  private class RecordingEngine(private val bytesPerChunk: Int) : SpeechEngine {
+  private class RecordingEngine(
+      private val bytesPerChunk: Int,
+      private val silentChunks: Set<String> = emptySet(),
+  ) : SpeechEngine {
     val synthesized = mutableListOf<String>()
+    val voices = mutableListOf<SpeakableVoice>()
+    val prosodies = mutableListOf<Prosody>()
 
     override fun synthesize(chunk: String, voice: SpeakableVoice, prosody: Prosody): ByteArray {
       synthesized += chunk
+      voices += voice
+      prosodies += prosody
+      if (chunk in silentChunks) return ByteArray(0)
       return ByteArray(bytesPerChunk) { (synthesized.size * 100 + it).toByte() }
     }
   }
@@ -49,46 +57,24 @@ class SynthesisLoopTest {
 
   @Test
   fun `every chunk is synthesized with the prosody of the run`() {
-    val prosodies = mutableListOf<Prosody>()
-    val engine =
-        object : SpeechEngine {
-          override fun synthesize(
-              chunk: String,
-              voice: SpeakableVoice,
-              prosody: Prosody,
-          ): ByteArray {
-            prosodies += prosody
-            return ByteArray(4)
-          }
-        }
+    val engine = RecordingEngine(bytesPerChunk = 4)
     val fast = Prosody(speedScale = 1.5, pitchScale = 0.05)
 
     SynthesisLoop(engine).run(listOf("一。", "二。"), defaultVoice, fast, RecordingSink(16)) { false }
 
-    assertEquals(listOf(fast, fast), prosodies)
+    assertEquals(listOf(fast, fast), engine.prosodies)
   }
 
   @Test
   fun `every chunk is synthesized with the voice of the run`() {
-    val voices = mutableListOf<SpeakableVoice>()
-    val engine =
-        object : SpeechEngine {
-          override fun synthesize(
-              chunk: String,
-              voice: SpeakableVoice,
-              prosody: Prosody,
-          ): ByteArray {
-            voices += voice
-            return ByteArray(4)
-          }
-        }
+    val engine = RecordingEngine(bytesPerChunk = 4)
     val whisper = SpeakableVoice("ずんだもん（ささやき）", "5.vvm", 22)
 
     SynthesisLoop(engine).run(listOf("一。", "二。"), whisper, neutralProsody, RecordingSink(16)) {
       false
     }
 
-    assertEquals(listOf(whisper, whisper), voices)
+    assertEquals(listOf(whisper, whisper), engine.voices)
   }
 
   @Test
@@ -139,19 +125,7 @@ class SynthesisLoopTest {
 
   @Test
   fun `a chunk with nothing to pronounce writes nothing and the next chunk is still spoken`() {
-    val engine =
-        object : SpeechEngine {
-          val synthesized = mutableListOf<String>()
-
-          override fun synthesize(
-              chunk: String,
-              voice: SpeakableVoice,
-              prosody: Prosody,
-          ): ByteArray {
-            synthesized += chunk
-            return if (chunk == "……。") ByteArray(0) else ByteArray(4) { 7 }
-          }
-        }
+    val engine = RecordingEngine(bytesPerChunk = 4, silentChunks = setOf("……。"))
     val sink = RecordingSink(16)
 
     SynthesisLoop(engine).run(listOf("……。", "二。"), defaultVoice, neutralProsody, sink) { false }
