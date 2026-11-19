@@ -9,21 +9,13 @@ import android.speech.tts.Voice
 import android.util.Log
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
-import io.github.omochice.vvtts.text.RubyNormalizer
-import io.github.omochice.vvtts.text.SentenceSplitter
-import io.github.omochice.vvtts.text.limitLength
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val TAG = "VvTts"
 
-// Provisional until request logs from real e-book readers show typical bracket lengths.
-// It lives here alone so tuning it later touches a single place.
-private const val PROVISIONAL_MAX_BRACKET_CONTENT_LENGTH = 100
-
 /** The system text-to-speech engine that reads Japanese text aloud. */
 class VvTtsService : TextToSpeechService() {
-  private val splitter = SentenceSplitter(PROVISIONAL_MAX_BRACKET_CONTENT_LENGTH)
   private val catalog by lazy { AssetCatalog.load() }
   private val layout by lazy { AssetLayout(filesDir) }
   private val preferredVoice by lazy { PreferredVoiceStore(this) }
@@ -71,9 +63,7 @@ class VvTtsService : TextToSpeechService() {
     stopRequested.set(false)
     val text = request.charSequenceText?.toString().orEmpty()
     val prosody = Prosody.fromAndroid(request.speechRate, request.pitch)
-    val maxLength = maxChunkLength(prosody)
-    val chunks =
-        splitter.split(RubyNormalizer.normalize(text)).flatMap { limitLength(it, maxLength) }
+    val chunks = speechChunks(text, prosody)
     val voice = resolveVoice(request.voiceName, preferredVoice.get(), currentVoices())
     logRequest(request, text, chunks, voice)
     speak(request, voice, prosody, chunks, callback)
