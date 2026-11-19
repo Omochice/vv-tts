@@ -8,8 +8,8 @@ import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter
 import android.util.Log
+import android.view.Menu
 import android.view.WindowInsets
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -72,30 +72,12 @@ class SettingsActivity : Activity() {
     defaultVoice = DefaultVoicePicker(this)
     voiceModelRows =
         VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }
-    val termsButton =
-        Button(this).apply {
-          setText(R.string.button_terms)
-          setOnClickListener { terms.show(forVoiceModel = null) }
-        }
-    val licensesButton =
-        Button(this).apply {
-          setText(R.string.button_licenses)
-          setOnClickListener {
-            startActivity(Intent(this@SettingsActivity, LicensesActivity::class.java))
-          }
-        }
     val content =
         LinearLayout(this).apply {
           orientation = LinearLayout.VERTICAL
           val gap = dp(16)
           setPadding(gap, gap, gap, gap)
           addView(status)
-          addView(
-              LinearLayout(this@SettingsActivity).apply {
-                addView(termsButton)
-                addView(licensesButton)
-              }
-          )
           addView(defaultVoice.view)
           addView(dictionary.view)
           addView(headingView(getString(R.string.voice_models_heading)))
@@ -116,6 +98,18 @@ class SettingsActivity : Activity() {
           }
         }
     )
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    menu.add(R.string.button_terms).setOnMenuItemClickListener {
+      terms.show(forVoiceModel = null)
+      true
+    }
+    menu.add(R.string.button_licenses).setOnMenuItemClickListener {
+      startActivity(Intent(this, LicensesActivity::class.java))
+      true
+    }
+    return true
   }
 
   override fun onStart() {
