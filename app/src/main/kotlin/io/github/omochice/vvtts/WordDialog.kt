@@ -38,11 +38,11 @@ internal class WordDialog(
           visibility = View.GONE
           setTextColor(activity.getColor(android.R.color.holo_red_dark))
         }
-    val accent =
-        AccentPicker(activity, pronouncer, { reading.text.toString() }) {
-          message.setText(it)
-          message.visibility = View.VISIBLE
-        }
+    fun showProblem(problem: Int) {
+      message.setText(problem)
+      message.visibility = View.VISIBLE
+    }
+    val accent = AccentPicker(activity, pronouncer, { reading.text.toString() }, ::showProblem)
     if (entry != null) {
       word.setText(entry.word)
       // Locked, because the dictionary replaces an entry by its word, so a changed word would add
@@ -81,12 +81,7 @@ internal class WordDialog(
             .show()
     shown.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
       val problem = submit(word.text.toString(), reading.text.toString(), accent.accent)
-      if (problem == null) {
-        shown.dismiss()
-      } else {
-        message.setText(problem)
-        message.visibility = View.VISIBLE
-      }
+      if (problem == null) shown.dismiss() else showProblem(problem)
     }
     dialog = shown
     picker = accent
