@@ -12,6 +12,7 @@ import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.dictionary.DictionaryChanges
 import io.github.omochice.vvtts.dictionary.wordsToRegister
 import java.io.File
+import jp.hiroshiba.voicevoxcore.AudioQuery
 import jp.hiroshiba.voicevoxcore.blocking.Onnxruntime
 import jp.hiroshiba.voicevoxcore.blocking.OpenJtalk
 import jp.hiroshiba.voicevoxcore.blocking.Synthesizer
@@ -61,11 +62,9 @@ class VoicevoxSpeechEngine(
           return ByteArray(0)
         }
     if (Log.isLoggable(TAG, Log.VERBOSE)) Log.v(TAG, "kana=${query.kana}")
-    query.outputSamplingRate = SpeechEngine.SAMPLE_RATE_HZ
-    query.outputStereo = false
     query.speedScale = prosody.speedScale
     query.pitchScale = prosody.pitchScale
-    return pcmFromWav(synthesizer.synthesis(query, voice.styleId).perform())
+    return pcmOf(query, voice)
   }
 
   override fun accentChoices(reading: String, voice: SpeakableVoice): AccentChoices? {
@@ -86,11 +85,15 @@ class VoicevoxSpeechEngine(
     val marked = requireNotNull(markAccent(kana, lengths, accent)) { "no such accent" }
     if (Log.isLoggable(TAG, Log.VERBOSE)) Log.v(TAG, "preview kana=$marked")
     val query = synthesizer.createAudioQueryFromKana(marked, voice.styleId)
-    query.outputSamplingRate = SpeechEngine.SAMPLE_RATE_HZ
-    query.outputStereo = false
-    val pcm = pcmFromWav(synthesizer.synthesis(query, voice.styleId).perform())
+    val pcm = pcmOf(query, voice)
     Log.i(TAG, "preview pcmBytes=${pcm.size}")
     return pcm
+  }
+
+  private fun pcmOf(query: AudioQuery, voice: SpeakableVoice): ByteArray {
+    query.outputSamplingRate = SpeechEngine.SAMPLE_RATE_HZ
+    query.outputStereo = false
+    return pcmFromWav(synthesizer.synthesis(query, voice.styleId).perform())
   }
 
   // The analyzer is not used for this, because it reads katakana as text: it split
