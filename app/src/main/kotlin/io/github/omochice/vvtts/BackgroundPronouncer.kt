@@ -9,14 +9,13 @@ import kotlin.concurrent.thread
  * UI thread, speaking with the voice [voice] chooses.
  *
  * The UI thread must never wait for the engine, which a synthesis in progress holds for seconds.
+ *
+ * @property voice returns the voice to pronounce with, or null when no voice model is installed.
  */
 internal class BackgroundPronouncer(
     private val activity: Activity,
-    private val voice: () -> SpeakableVoice?,
+    val voice: () -> SpeakableVoice?,
 ) {
-  /** Returns the voice to pronounce with, or null when no voice model is installed. */
-  fun voice(): SpeakableVoice? = voice.invoke()
-
   /**
    * Runs [work] with the engine on a thread of its own, then hands what it returned or threw to
    * [deliver] on the UI thread.
