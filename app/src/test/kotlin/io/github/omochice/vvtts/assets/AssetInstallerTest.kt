@@ -351,7 +351,7 @@ class AssetInstallerTest {
 
       installers
           .mapIndexed { index, installer ->
-            thread { results[index] = installer.install("0.vvm", { _, _ -> }, { false }) }
+            thread { results[index] = installer.install() }
           }
           .forEach { it.join() }
 
