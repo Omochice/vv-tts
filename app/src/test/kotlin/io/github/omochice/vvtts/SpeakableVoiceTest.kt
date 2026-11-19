@@ -5,7 +5,8 @@ import io.github.omochice.vvtts.assets.AssetLayout
 import io.github.omochice.vvtts.assets.RemoteFile
 import io.github.omochice.vvtts.assets.Voice
 import io.github.omochice.vvtts.assets.VoiceModel
-import java.io.File
+import io.github.omochice.vvtts.assets.create
+import io.github.omochice.vvtts.assets.installBasePartsByHand
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -105,16 +106,10 @@ class SpeakableVoiceTest {
     assertNull(resolveVoice(zundamon.name, zundamon.name, emptyList()))
   }
 
-  private fun File.create() = apply {
-    parentFile.mkdirs()
-    writeText("x")
-  }
-
   @Test
   fun `the installed voices are those of the voice models present beside the base parts`() {
     val layout = AssetLayout(tmp.root)
-    layout.onnxRuntimeLibrary.create()
-    File(layout.dictionaryDir, "sys.dic").create()
+    layout.installBasePartsByHand()
     layout.voiceModel("1.vvm").create()
 
     assertEquals(listOf(himari), installedVoices(models, layout))

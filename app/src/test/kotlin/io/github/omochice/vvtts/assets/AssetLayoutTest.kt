@@ -13,15 +13,9 @@ class AssetLayoutTest {
 
   private fun layout() = AssetLayout(tmp.root)
 
-  private fun File.create() = apply {
-    parentFile.mkdirs()
-    writeText("x")
-  }
-
   private fun installEverything() {
     val layout = layout()
-    layout.onnxRuntimeLibrary.create()
-    File(layout.dictionaryDir, "sys.dic").create()
+    layout.installBasePartsByHand()
     layout.voiceModel("0.vvm").create()
   }
 
