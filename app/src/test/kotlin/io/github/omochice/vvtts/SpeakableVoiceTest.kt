@@ -2,7 +2,6 @@ package io.github.omochice.vvtts
 
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetLayout
-import io.github.omochice.vvtts.assets.RemoteFile
 import io.github.omochice.vvtts.assets.Voice
 import io.github.omochice.vvtts.assets.VoiceModel
 import io.github.omochice.vvtts.assets.create
@@ -19,7 +18,7 @@ class SpeakableVoiceTest {
 
   private fun model(fileName: String, vararg voices: Voice) =
       VoiceModel(
-          RemoteFile(fileName, "https://example.invalid/$fileName", 1, "0".repeat(64)),
+          placeholderFile(fileName),
           voices.toList(),
       )
 
