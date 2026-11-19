@@ -1,5 +1,6 @@
 package io.github.omochice.vvtts
 
+import android.app.Notification
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -39,12 +40,7 @@ class AssetDownloadJobService : JobService() {
     }
     Log.i(TAG, "download job started for $voiceModelFileName")
     notifications.createChannel()
-    setNotification(
-        params,
-        NOTIFICATION_ID,
-        notifications.running(null),
-        JOB_END_NOTIFICATION_POLICY_DETACH,
-    )
+    post(params, notifications.running(null))
     val stop = CountDownLatch(1).also { stopSignal = it }
     // Not on the worker, which could start late and supersede the run that replaced it.
     val run = state.startRun(voiceModelFileName)
@@ -93,7 +89,7 @@ class AssetDownloadJobService : JobService() {
         }
     // Handed to the job rather than posted after jobFinished, so that the replacement cannot race
     // the system detaching the progress notification.
-    setNotification(params, NOTIFICATION_ID, final, JOB_END_NOTIFICATION_POLICY_DETACH)
+    post(params, final)
     jobFinished(params, false)
   }
 
@@ -125,13 +121,12 @@ class AssetDownloadJobService : JobService() {
   }
 
   private fun showProgress(params: JobParameters, percent: Int, doneBytes: Long) {
-    setNotification(
-        params,
-        NOTIFICATION_ID,
-        notifications.running(percent),
-        JOB_END_NOTIFICATION_POLICY_DETACH,
-    )
+    post(params, notifications.running(percent))
     updateTransferredNetworkBytes(params, doneBytes, 0)
+  }
+
+  private fun post(params: JobParameters, notification: Notification) {
+    setNotification(params, NOTIFICATION_ID, notification, JOB_END_NOTIFICATION_POLICY_DETACH)
   }
 
   /** Scheduling and observing the download job. */
