@@ -17,11 +17,8 @@ sealed interface InstallResult {
   /** The catalog has no ONNX Runtime build for the Android ABI named [abi]. */
   data class NoOnnxRuntimeFor(val abi: String) : Failure
 
-  /**
-   * Downloading [file] ended with [result], which is never [DownloadResult.Installed] or
-   * [DownloadResult.Stopped].
-   */
-  data class DownloadFailed(val file: RemoteFile, val result: DownloadResult) : Failure
+  /** Downloading [file] failed with [result]. */
+  data class DownloadFailed(val file: RemoteFile, val result: DownloadResult.Failure) : Failure
 
   /**
    * [file] was downloaded but could not be verified, unpacked or moved into place, failing with
@@ -131,7 +128,7 @@ class AssetInstaller(
     when (downloaded) {
       DownloadResult.Installed -> Unit
       DownloadResult.Stopped -> return InstallResult.Stopped
-      else -> return InstallResult.DownloadFailed(part.remote, downloaded)
+      is DownloadResult.Failure -> return InstallResult.DownloadFailed(part.remote, downloaded)
     }
     if (needsDownload) progress.completeFile(part.remote.sizeBytes)
     val extractTo = part.extractTo ?: return null

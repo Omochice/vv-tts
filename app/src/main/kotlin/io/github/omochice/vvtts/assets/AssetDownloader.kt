@@ -13,12 +13,15 @@ sealed interface DownloadResult {
   /** The verified file is at the target path, read-only. */
   data object Installed : DownloadResult
 
+  /** The call ended without the file and without a stop being requested. */
+  sealed interface Failure : DownloadResult
+
   /**
    * The downloaded bytes did not match the pin and were deleted, so the next attempt starts over.
    *
    * Repeating this outcome means the pin or the server is wrong, not the network.
    */
-  data object Corrupt : DownloadResult
+  data object Corrupt : Failure
 
   /** A stop was requested; the bytes received so far are kept and the next attempt resumes. */
   data object Stopped : DownloadResult
@@ -26,14 +29,14 @@ sealed interface DownloadResult {
   /**
    * The server answered with [statusCode] instead of the file; any bytes received earlier are kept.
    */
-  data class UnexpectedStatus(val statusCode: Int) : DownloadResult
+  data class UnexpectedStatus(val statusCode: Int) : Failure
 
   /**
    * The transfer broke off; the bytes received so far are kept and the next attempt resumes.
    *
    * [cause] can also be a local write failure, such as a full disk.
    */
-  data class TransferFailed(val cause: IOException) : DownloadResult
+  data class TransferFailed(val cause: IOException) : Failure
 }
 
 /** Downloads pinned remote files, resuming interrupted transfers. */
