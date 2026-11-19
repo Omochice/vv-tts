@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.text.format.Formatter
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import android.view.WindowInsets
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -176,7 +177,9 @@ class SettingsActivity : Activity() {
             pendingVoiceModel,
             installed.isNotEmpty(),
         )
-    status.text = describe(current)
+    val message = describe(current)
+    status.text = message
+    status.visibility = if (message == null) View.GONE else View.VISIBLE
     defaultVoice.show(installed)
     val baseParts = layout.hasBaseParts()
     voiceModelRows.update({ baseParts && layout.hasVoiceModel(it) }, current.allowsDownload)
@@ -186,9 +189,10 @@ class SettingsActivity : Activity() {
   private fun previewVoice(): SpeakableVoice? =
       PreferredVoiceStore(this).defaultAmong(installedVoices(catalog.voiceModels, layout))
 
-  private fun describe(current: SettingsStatus): String =
+  // Null when there is nothing to tell: the rows already say which voice models are installed.
+  private fun describe(current: SettingsStatus): String? =
       when (current) {
-        SettingsStatus.Installed -> getString(R.string.status_installed)
+        SettingsStatus.Installed -> null
         SettingsStatus.NotInstalled -> getString(R.string.status_not_installed)
         is SettingsStatus.Pending ->
             getString(R.string.status_pending, voiceModelName(current.voiceModelFileName))
