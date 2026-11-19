@@ -202,15 +202,7 @@
         # keep-sorted start block=yes
         apps.nvfetcher = {
           type = "app";
-          program = pkgs.lib.getExe (
-            pkgs.writeShellApplication {
-              name = "nvfetcher";
-              runtimeInputs = [ pkgs.nvfetcher ];
-              text = ''
-                nvfetcher "$@"
-              '';
-            }
-          );
+          program = pkgs.lib.getExe pkgs.nvfetcher;
         };
         checks = {
           # keep-sorted start
