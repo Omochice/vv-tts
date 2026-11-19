@@ -25,4 +25,24 @@ class ChunkLengthTest {
   fun `a very slow speed is held at the floor of 20 code units`() {
     assertEquals(20, maxAt(0.01))
   }
+
+  private fun chunksAt(speedScale: Double, text: String): List<String> =
+      speechChunks(text, Prosody(speedScale, pitchScale = 0.0))
+
+  @Test
+  fun `speech chunks are split into sentences`() {
+    assertEquals(listOf("今日は晴れ。", "明日は雨。"), chunksAt(1.0, "今日は晴れ。明日は雨。"))
+  }
+
+  @Test
+  fun `ruby is replaced by its reading before the text is split into sentences`() {
+    assertEquals(listOf("すごいと言った。"), chunksAt(1.0, "｜すごい！《すごい》と言った。"))
+  }
+
+  @Test
+  fun `a sentence longer than the cap for the speed is cut at the cap`() {
+    val sentence = "あ".repeat(60) + "。"
+    assertEquals(listOf(sentence), chunksAt(1.0, sentence))
+    assertEquals(listOf("あ".repeat(40), "あ".repeat(20) + "。"), chunksAt(0.5, sentence))
+  }
 }
