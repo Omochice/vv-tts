@@ -1,5 +1,6 @@
-package io.github.omochice.vvtts
+package io.github.omochice.vvtts.voicevox
 
+import io.github.omochice.vvtts.SpeechEngine
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -16,7 +17,7 @@ private const val FMT_SAMPLE_RATE_OFFSET = 4
 private const val FMT_BITS_PER_SAMPLE_OFFSET = 14
 
 /** Thrown when bytes are not a WAV file holding audio in the format [SpeechEngine] promises. */
-class InvalidWavException(message: String) : Exception(message)
+internal class InvalidWavException(message: String) : Exception(message)
 
 /**
  * Returns the PCM samples of [wav], which must be 16-bit mono PCM at [SpeechEngine.SAMPLE_RATE_HZ].
@@ -24,7 +25,7 @@ class InvalidWavException(message: String) : Exception(message)
  * @throws InvalidWavException if [wav] is not a well-formed WAV file, is truncated, or holds audio
  *   in any other format.
  */
-fun pcmFromWav(wav: ByteArray): ByteArray {
+internal fun pcmFromWav(wav: ByteArray): ByteArray {
   val buffer = ByteBuffer.wrap(wav).order(ByteOrder.LITTLE_ENDIAN)
   if (wav.size < RIFF_HEADER_BYTES) throw InvalidWavException("shorter than a RIFF header")
   if (fourCc(wav, 0) != "RIFF") throw InvalidWavException("not a RIFF file")

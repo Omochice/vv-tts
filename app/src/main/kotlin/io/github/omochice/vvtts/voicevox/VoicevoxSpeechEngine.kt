@@ -14,7 +14,6 @@ import io.github.omochice.vvtts.dictionary.kanaWithoutLongVowels
 import io.github.omochice.vvtts.dictionary.markAccent
 import io.github.omochice.vvtts.dictionary.moraPieces
 import io.github.omochice.vvtts.dictionary.wordsToRegister
-import io.github.omochice.vvtts.pcmFromWav
 import java.io.File
 import jp.hiroshiba.voicevoxcore.blocking.Onnxruntime
 import jp.hiroshiba.voicevoxcore.blocking.OpenJtalk
