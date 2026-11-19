@@ -25,11 +25,9 @@ class UnexpectedStatusException(val statusCode: Int) : IOException("HTTP status 
 /**
  * Brings a local partial copy of a remote file up to its full length over HTTP.
  *
- * @param connectTimeoutMillis how long to wait for a connection, in milliseconds.
  * @param readTimeoutMillis how long a single read may wait for data, in milliseconds.
  */
 class HttpRangeFetcher(
-    private val connectTimeoutMillis: Int = 30_000,
     private val readTimeoutMillis: Int = 30_000,
 ) {
   /**
@@ -93,7 +91,7 @@ class HttpRangeFetcher(
 
   private fun open(url: String, offset: Long): HttpURLConnection =
       (URL(url).openConnection() as HttpURLConnection).apply {
-        connectTimeout = connectTimeoutMillis
+        connectTimeout = 30_000
         readTimeout = readTimeoutMillis
         // Stated rather than left to the HTTP stack, because under a content coding a range counts
         // bytes of the encoded body instead of the pinned file.
