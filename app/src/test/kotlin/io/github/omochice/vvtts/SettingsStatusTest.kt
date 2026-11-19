@@ -2,17 +2,14 @@ package io.github.omochice.vvtts
 
 import io.github.omochice.vvtts.assets.DownloadResult
 import io.github.omochice.vvtts.assets.InstallResult
-import io.github.omochice.vvtts.assets.RemoteFile
-import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SettingsStatusTest {
-  private val file = RemoteFile("5.vvm", "https://example.invalid/5.vvm", 1, "0".repeat(64))
-  private val transferFailed =
-      InstallResult.DownloadFailed(file, DownloadResult.TransferFailed(IOException()))
+  private val file = placeholderFile("5.vvm")
+  private val transferFailed = transferFailure(file)
 
   private fun finished(result: InstallResult) = InstallState.Finished("5.vvm", result)
 

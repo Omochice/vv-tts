@@ -2,7 +2,6 @@ package io.github.omochice.vvtts
 
 import io.github.omochice.vvtts.assets.DownloadResult
 import io.github.omochice.vvtts.assets.InstallResult
-import io.github.omochice.vvtts.assets.RemoteFile
 import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,9 +9,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class RetryTest {
-  private val file = RemoteFile("0.vvm", "https://example.invalid/0.vvm", 1, "0".repeat(64))
-  private val transferFailed =
-      InstallResult.DownloadFailed(file, DownloadResult.TransferFailed(IOException()))
+  private val file = placeholderFile("0.vvm")
+  private val transferFailed = transferFailure(file)
   private val corrupt = InstallResult.DownloadFailed(file, DownloadResult.Corrupt)
 
   @Test

@@ -2,13 +2,12 @@ package io.github.omochice.vvtts
 
 import io.github.omochice.vvtts.assets.DownloadResult
 import io.github.omochice.vvtts.assets.InstallResult
-import io.github.omochice.vvtts.assets.RemoteFile
 import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class FailureReasonTest {
-  private val file = RemoteFile("0.vvm", "https://example.invalid/0.vvm", 1, "0".repeat(64))
+  private val file = placeholderFile("0.vvm")
 
   private fun downloadFailed(result: DownloadResult.Failure) =
       InstallResult.DownloadFailed(file, result)
