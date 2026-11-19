@@ -9,6 +9,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Build
 import android.os.PersistableBundle
+import android.os.SystemClock
 import android.util.Log
 import io.github.omochice.vvtts.assets.AssetCatalog
 import io.github.omochice.vvtts.assets.AssetInstaller
@@ -101,7 +102,11 @@ class AssetDownloadJobService : JobService() {
       isStopRequested: () -> Boolean,
   ): InstallResult {
     var firstProgressLogged = false
-    var shownPercent = -1
+    // Paced rather than posted at every whole percent, because the system drops notification
+    // updates from a package that posts more than about five a second.
+    // On a fast connection the one dropped was the final notification, which left "downloading"
+    // on screen after the download had ended.
+    val pacer = ProgressPacer(minIntervalMillis = 1000, SystemClock::elapsedRealtime)
     return installer.install(
         voiceModelFileName,
         { doneBytes, totalBytes ->
@@ -111,8 +116,7 @@ class AssetDownloadJobService : JobService() {
             Log.i(TAG, "download progress first done=$doneBytes total=$totalBytes")
           }
           val percent = wholePercent(doneBytes, totalBytes)
-          if (percent != shownPercent && !isStopRequested()) {
-            shownPercent = percent
+          if (!isStopRequested() && pacer.shouldShow(percent)) {
             showProgress(params, percent, doneBytes)
           }
         },
