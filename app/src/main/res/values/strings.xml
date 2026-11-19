@@ -64,7 +64,6 @@
     <string name="terms_download_size">ダウンロードサイズ：%s</string>
     <string name="terms_onnx_runtime_heading">VOICEVOX ONNX Runtime</string>
     <string name="terms_agree">同意してダウンロード</string>
-    <string name="terms_cancel">キャンセル</string>
     <string name="terms_close">閉じる</string>
 
     <string name="notification_channel">音声モデルのダウンロード</string>
