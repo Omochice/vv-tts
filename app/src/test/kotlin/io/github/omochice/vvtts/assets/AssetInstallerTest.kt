@@ -77,15 +77,6 @@ class AssetInstallerTest {
       isStopRequested: () -> Boolean = { false },
   ) = install("0.vvm", onProgress, isStopRequested)
 
-  private fun File.create(text: String = "copied by hand") = apply {
-    parentFile?.mkdirs()
-    writeText(text)
-  }
-
-  private fun installOnnxRuntimeByHand() = layout.onnxRuntimeLibrary.create()
-
-  private fun installDictionaryByHand() = File(layout.dictionaryDir, "sys.dic").create()
-
   @Test
   fun `a fresh install makes the voice model speakable`() {
     val result = installer().install()
@@ -116,8 +107,7 @@ class AssetInstallerTest {
 
   @Test
   fun `parts copied in by hand are not downloaded again`() {
-    installOnnxRuntimeByHand()
-    installDictionaryByHand()
+    layout.installBasePartsByHand()
 
     val result = installer().install()
 
@@ -258,7 +248,7 @@ class AssetInstallerTest {
 
   @Test
   fun `an ABI without an ONNX Runtime build is fine when the library is already present`() {
-    installOnnxRuntimeByHand()
+    layout.installOnnxRuntimeByHand()
 
     val result = installer(abi = "mips").install()
 
@@ -274,7 +264,7 @@ class AssetInstallerTest {
 
   @Test
   fun `progress counts up across the files still to download to their total size`() {
-    installDictionaryByHand()
+    layout.installDictionaryByHand()
     val progress = mutableListOf<Pair<Long, Long>>()
 
     installer().install(onProgress = { done, total -> progress += done to total })
@@ -298,7 +288,7 @@ class AssetInstallerTest {
 
   @Test
   fun `parts in place and archives already downloaded count for nothing`() {
-    installOnnxRuntimeByHand()
+    layout.installOnnxRuntimeByHand()
     File(layout.downloadsDir, dictPin.fileName).create().writeBytes(dictArchive)
 
     assertEquals(voicePin.sizeBytes, installer().bytesToDownload("0.vvm"))
@@ -313,7 +303,7 @@ class AssetInstallerTest {
 
   @Test
   fun `the bytes to download are the total that progress reports`() {
-    installDictionaryByHand()
+    layout.installDictionaryByHand()
     val expected = installer().bytesToDownload("0.vvm")
     val totals = mutableSetOf<Long>()
 
@@ -353,8 +343,7 @@ class AssetInstallerTest {
     try {
       val installers = servers.mapIndexed { index, server ->
         val rootLayout = AssetLayout(tmp.newFolder("root$index"))
-        rootLayout.onnxRuntimeLibrary.create()
-        File(rootLayout.dictionaryDir, "sys.dic").create()
+        rootLayout.installBasePartsByHand()
         val catalog = catalog(voice = pin("0.vvm", voiceModel, server))
         AssetInstaller(catalog, rootLayout, "arm64-v8a")
       }
