@@ -1,4 +1,4 @@
-package io.github.omochice.vvtts.dictionary
+package io.github.omochice.vvtts.voicevox
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
