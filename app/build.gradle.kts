@@ -43,6 +43,7 @@ android {
 
 dependencies {
   implementation(project(":text"))
+  implementation(libs.aboutlibraries.core)
   implementation(libs.voicevox.core)
 
   testImplementation(libs.junit)
