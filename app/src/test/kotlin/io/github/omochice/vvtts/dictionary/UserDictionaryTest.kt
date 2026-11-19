@@ -94,6 +94,15 @@ class UserDictionaryTest {
   }
 
   @Test
+  fun `removing a word that differs only in ASCII case drops the stored one`() {
+    dictionary().add(validEntry("nginx", "エンジンエックス"))
+
+    dictionary().remove(validEntry("NGINX", "エンジンエックス"))
+
+    assertEquals(emptyList(), dictionary().entries())
+  }
+
+  @Test
   fun `removing a word that is not stored changes nothing`() {
     dictionary().add(validEntry("nginx", "エンジンエックス"))
 
