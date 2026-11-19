@@ -170,7 +170,8 @@ class SettingsActivity : Activity() {
         )
     status.text = describe(current)
     defaultVoice.show(installed)
-    voiceModelRows.update(layout::isInstalled, current.allowsDownload)
+    val baseParts = layout.hasBaseParts()
+    voiceModelRows.update({ baseParts && layout.hasVoiceModel(it) }, current.allowsDownload)
   }
 
   // The default voice, because the preview should sound like what clients get unless they choose.
