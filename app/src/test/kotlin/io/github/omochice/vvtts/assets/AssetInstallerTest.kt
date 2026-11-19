@@ -2,7 +2,6 @@ package io.github.omochice.vvtts.assets
 
 import com.sun.net.httpserver.HttpExchange
 import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import kotlin.random.Random
@@ -56,10 +55,7 @@ class AssetInstallerTest {
           fileName = fileName,
           url = server.url,
           sizeBytes = bytes.size.toLong(),
-          sha256 =
-              MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") {
-                "%02x".format(it)
-              },
+          sha256 = sha256Hex(bytes),
       )
 
   private fun catalog(dictionary: RemoteFile = dictPin, voice: RemoteFile = voicePin) =
