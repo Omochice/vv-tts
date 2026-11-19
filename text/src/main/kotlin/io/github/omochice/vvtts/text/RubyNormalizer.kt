@@ -9,8 +9,8 @@ private const val ANGLE_READING = """[^《》\r\n]+"""
 // The bar base excludes bars so that the nearest bar wins over an unrelated earlier one.
 private val RUBY =
     Regex(
-        """[｜|]([^《｜|\r\n]*)《(?<barReading>$ANGLE_READING)》""" +
-            """|($KANJI+)《(?<angleReading>$ANGLE_READING)》""" +
+        """[｜|][^《｜|\r\n]*《(?<barReading>$ANGLE_READING)》""" +
+            """|$KANJI+《(?<angleReading>$ANGLE_READING)》""" +
             """|(?<wideBase>$KANJI+)（(?<wideReading>$KANA+)）""" +
             """|(?<narrowBase>$KANJI+)\((?<narrowReading>$KANA+)\)"""
     )
