@@ -2,7 +2,6 @@ package io.github.omochice.vvtts.assets
 
 import java.io.File
 import java.net.SocketTimeoutException
-import java.security.MessageDigest
 import kotlin.random.Random
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -28,10 +27,7 @@ class AssetDownloaderTest {
           fileName = "asset",
           url = url,
           sizeBytes = bytes.size.toLong(),
-          sha256 =
-              MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") {
-                "%02x".format(it)
-              },
+          sha256 = sha256Hex(bytes),
       )
 
   private fun target() = File(tmp.root, "asset")
