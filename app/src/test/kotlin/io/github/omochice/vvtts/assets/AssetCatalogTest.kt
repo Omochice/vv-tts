@@ -195,6 +195,16 @@ class AssetCatalogTest {
     assertEquals(ids.distinct(), ids)
   }
 
+  @Test
+  fun `a voice model is found by its file name`() {
+    assertEquals(catalog.voiceModels[3], catalog.voiceModel("3.vvm"))
+  }
+
+  @Test
+  fun `no voice model is found for a file name the catalog lacks`() {
+    assertEquals(null, catalog.voiceModel("99.vvm"))
+  }
+
   private fun resourceLines(name: String): List<String> =
       AssetCatalog::class.java.getResourceAsStream(name)!!.reader().readLines()
 

@@ -80,11 +80,10 @@ class AssetInstaller(
   fun bytesToDownload(voiceModelFileName: String): Long =
       missingParts(voiceModelNamed(voiceModelFileName)).downloadBytes()
 
-  private fun voiceModelNamed(fileName: String): VoiceModel {
-    val voiceModel = catalog.voiceModels.find { it.file.fileName == fileName }
-    requireNotNull(voiceModel) { "the catalog has no voice model named $fileName" }
-    return voiceModel
-  }
+  private fun voiceModelNamed(fileName: String): VoiceModel =
+      requireNotNull(catalog.voiceModel(fileName)) {
+        "the catalog has no voice model named $fileName"
+      }
 
   /** Lists what [layout] lacks, leaving out an ONNX Runtime the catalog has no build of. */
   private fun missingParts(voiceModel: VoiceModel): List<Part> = buildList {

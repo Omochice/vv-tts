@@ -210,7 +210,7 @@ class SettingsActivity : Activity() {
 
   /** Names a voice model by the characters it holds, which the user knows it by. */
   private fun voiceModelName(fileName: String): String {
-    val voices = catalog.voiceModels.find { it.file.fileName == fileName }?.voices.orEmpty()
+    val voices = catalog.voiceModel(fileName)?.voices.orEmpty()
     val characters = characterStylesOf(voices).joinToString("、") { it.character }
     return characters.ifEmpty { fileName }
   }

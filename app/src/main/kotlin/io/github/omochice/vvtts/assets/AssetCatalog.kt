@@ -24,6 +24,9 @@ class AssetCatalog(
     val voiceModels: List<VoiceModel>,
     val onnxRuntimeArchives: Map<String, RemoteFile>,
 ) {
+  /** Returns the voice model whose file is named [fileName], or null when there is none. */
+  fun voiceModel(fileName: String): VoiceModel? = voiceModels.find { it.file.fileName == fileName }
+
   companion object {
     /**
      * Reads the catalog bundled with the app.
