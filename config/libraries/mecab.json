@@ -1,0 +1,10 @@
+{
+  "uniqueId": "VOICEVOX:open_jtalk-mecab",
+  "name": "MeCab",
+  "description": "",
+  "developers": [],
+  "website": "https://github.com/VOICEVOX/open_jtalk/tree/1.11/src/mecab",
+  "licenses": [
+    "BSD-3-Clause-mecab"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "uniqueId": "VOICEVOX:open_jtalk",
+  "artifactVersion": "1.11",
+  "name": "Open JTalk",
+  "description": "",
+  "developers": [],
+  "website": "https://github.com/VOICEVOX/open_jtalk",
+  "licenses": [
+    "BSD-3-Clause-open_jtalk"
+  ]
+}

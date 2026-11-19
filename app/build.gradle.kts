@@ -1,5 +1,6 @@
 plugins {
   alias(libs.plugins.android.application)
+  alias(libs.plugins.aboutlibraries.android)
   alias(libs.plugins.detekt)
   alias(libs.plugins.kover)
 }
@@ -62,4 +63,16 @@ kover {
 detekt {
   buildUponDefaultConfig = true
   config.setFrom(rootProject.file("config/detekt/detekt.yaml"))
+}
+
+aboutLibraries {
+  // Fetching licenses online would make the generated list depend on the network and on a GitHub
+  // token.
+  // The license texts the POMs leave out come from config/licenses instead.
+  offlineMode = true
+  collect {
+    configPath = file("../config")
+    // A BOM puts no code into the APK, so listing it would show a license the app does not carry.
+    includePlatform = false
+  }
 }

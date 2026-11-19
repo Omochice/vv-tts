@@ -1,0 +1,11 @@
+{
+  "uniqueId": "VOICEVOX:open_jtalk-rs",
+  "artifactVersion": "7c87b4227bb005b439a3ad473b48ce8975829576",
+  "name": "open_jtalk-rs",
+  "description": "",
+  "developers": [],
+  "website": "https://github.com/VOICEVOX/open_jtalk-rs",
+  "licenses": [
+    "BSD-3-Clause-open_jtalk-rs"
+  ]
+}
