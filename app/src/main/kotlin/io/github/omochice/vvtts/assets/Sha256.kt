@@ -17,4 +17,4 @@ fun sha256Hex(file: File): String {
 /** Returns the SHA-256 digest of [bytes] as 64 lowercase hex characters. */
 fun sha256Hex(bytes: ByteArray): String = MessageDigest.getInstance("SHA-256").digest(bytes).toHex()
 
-private fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it) }
+private fun ByteArray.toHex(): String = toHexString()
