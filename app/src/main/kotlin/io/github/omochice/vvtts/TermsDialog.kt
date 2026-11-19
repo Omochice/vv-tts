@@ -79,7 +79,7 @@ internal class TermsDialog(
             consent.record(fingerprint)
             onAgreed(forVoiceModel)
           }
-          .setNegativeButton(R.string.terms_cancel, null)
+          .setNegativeButton(R.string.button_cancel, null)
     }
     dialog?.dismiss()
     dialog = builder.show()
