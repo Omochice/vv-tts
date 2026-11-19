@@ -162,9 +162,13 @@
             ''
               # The terms shown must belong to the archive the app downloads, and that archive is pinned in assets.tsv, not here.
               expected=$(perl -F'\t' -lane 'print $F[3] if $F[1] eq "${archiveName}.tgz"' "$catalog")
+              if [ -z "$expected" ]; then
+                echo "assets.tsv has no line for ${archiveName}.tgz, the ONNX Runtime archive pinned in nvfetcher.toml" >&2
+                exit 1
+              fi
               actual=$(sha256sum ${onnxRuntime.src} | perl -lane 'print $F[0]')
               if [ "$actual" != "$expected" ]; then
-                echo "${archiveName}.tgz pinned in nvfetcher.toml has sha256 $actual, but assets.tsv pins '$expected'" >&2
+                echo "${archiveName}.tgz pinned in nvfetcher.toml has sha256 $actual, but assets.tsv pins $expected" >&2
                 exit 1
               fi
 
