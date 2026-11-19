@@ -53,7 +53,7 @@ class VvTtsService : TextToSpeechService() {
       variant: String?,
   ): String? =
       if (LanguageSupport.of(lang, country) == LanguageSupport.NONE) null
-      else resolveVoice(null, preferredVoice.get(), currentVoices())?.name
+      else preferredVoice.defaultAmong(currentVoices())?.name
 
   override fun onStop() {
     stopRequested.set(true)

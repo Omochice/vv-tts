@@ -58,7 +58,7 @@ internal class DefaultVoicePicker(private val context: Context) {
     currentDefault()?.let { spinner.setSelection(installed.indexOf(it)) }
   }
 
-  private fun currentDefault(): SpeakableVoice? = resolveVoice(null, preferred.get(), voices)
+  private fun currentDefault(): SpeakableVoice? = preferred.defaultAmong(voices)
 
   private fun choose(voice: SpeakableVoice) {
     // Not stored when it is already the default, because the spinner also reports the selection
