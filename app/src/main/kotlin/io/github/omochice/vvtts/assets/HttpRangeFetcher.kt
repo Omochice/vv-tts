@@ -47,7 +47,6 @@ class HttpRangeFetcher(
    * @throws UnexpectedStatusException if the server answers with neither the file nor 416.
    * @throws IOException if the transfer breaks off before [partial] reaches [totalBytes].
    */
-  // The depth comes from the two use blocks that close both streams however the loop ends.
   // Moving the loop into its own function would need a sentinel return to carry a stop out of it.
   @Suppress("NestedBlockDepth")
   fun fetch(

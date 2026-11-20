@@ -10,11 +10,8 @@ private const val ASSETS = "$APP.assets"
 private const val VOICEVOX_CORE = "jp.hiroshiba.voicevoxcore"
 
 class ImportBoundaryTest {
-  // Resolved from the module directory, where Gradle runs unit tests, rather than through
-  // scopeFromProduction.
-  // Konsist finds the project root by looking for a Gradle wrapper or a .git directory, and this
-  // project has no wrapper, so inside a git worktree it would resolve to the enclosing checkout and
-  // check that checkout's sources instead of these.
+  // Not scopeFromProduction, which finds the project root by a Gradle wrapper or a .git directory
+  // and so, in a git worktree of this project without a wrapper, checks the enclosing checkout.
   private val production = Konsist.scopeFromExternalDirectory(File("src/main").absolutePath)
 
   @Test
