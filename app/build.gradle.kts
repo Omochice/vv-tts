@@ -26,6 +26,8 @@ android {
     // Until the app has its own icon, a placeholder would only ship as if it were the real one.
     // Remove this line together with adding the icon.
     disable += "MissingApplicationIcon"
+    // Otherwise a new release upstream fails the build of a change unrelated to it.
+    disable += listOf("AndroidGradlePluginVersion", "GradleDependency")
   }
 }
 
