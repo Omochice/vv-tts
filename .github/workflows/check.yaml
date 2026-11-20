@@ -1,0 +1,61 @@
+name: Code check
+
+on:
+  push: null
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  flake-check:
+    timeout-minutes: 20
+    name: Check flake
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - run: nix flake check --print-build-logs
+  check-fixup:
+    timeout-minutes: 5
+    name: Check fixup commits
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Check no fixup commits remain
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          SUBJECTS=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/commits" \
+            --jq '.[].commit.message | split("\n")[0]')
+
+          if grep -E '^(fixup|squash|amend)! ' <<<"$SUBJECTS"; then
+            echo "Error: the commits above must be squashed before merging"
+            exit 1
+          fi
+  status-check:
+    timeout-minutes: 5
+    name: Status Check
+    runs-on: ubuntu-latest
+    needs:
+      # keep-sorted start
+      - check-fixup
+      - flake-check
+      # keep-sorted end
+    permissions:
+      actions: read
+    if: always()
+    steps:
+      - uses: Kesin11/actions-timeline@460b1f8a750077029ad3589824d371b200e91dcf # v3.2.1
+      - if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
