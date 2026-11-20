@@ -105,8 +105,8 @@ class AssetDownloadJobService : JobService() {
     var firstProgressLogged = false
     // Paced rather than posted at every whole percent, because the system drops notification
     // updates from a package that posts more than about five a second.
-    // On a fast connection the one dropped was the final notification, which left "downloading"
-    // on screen after the download had ended.
+    // On a fast connection the one dropped was the final notification,
+    // which left "downloading" on screen after the download had ended.
     val pacer = ProgressPacer(minIntervalMillis = 1000, SystemClock::elapsedRealtime)
     return installer.install(
         voiceModelFileName,
