@@ -1,8 +1,7 @@
 package io.github.omochice.vvtts.text
 
-// 「；」 and whitespace are left out.
-// 「；」 is rare in Japanese prose, and whitespace in mixed text often sits inside a phrase such as
-// "Android 15", where a cut would not fall on a pause.
+// Without 「；」, which is rare in Japanese prose, and whitespace, which often sits inside a phrase
+// such as "Android 15", where a cut would not fall on a pause.
 private const val SOFT_BREAKS = "、，,"
 
 private const val MIN_MAX_LENGTH = 2
@@ -13,11 +12,7 @@ private const val MIN_MAX_LENGTH = 2
  * A longer chunk is cut after the last 「、」「，」「,」 that fits, which stays at the end of the earlier
  * piece, or at [maxLength] itself when none fits, never between the halves of a surrogate pair.
  *
- * Unlike [SentenceSplitter], this cuts at 「、」 although the synthesizer voices each cut as the end
- * of a sentence.
- *
- * The memory VOICEVOX needs grows with the length of the voiced audio and a long enough chunk gets
- * the engine process killed, so a wrong intonation is the lesser evil.
+ * The synthesizer voices each cut as the end of a sentence.
  *
  * @param maxLength the longest piece, in UTF-16 code units.
  * @return the pieces, trimmed of surrounding whitespace, none of them empty.

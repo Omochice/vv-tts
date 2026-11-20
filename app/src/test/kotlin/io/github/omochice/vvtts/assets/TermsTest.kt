@@ -14,10 +14,8 @@ class TermsTest {
     assertEquals(listOf("README.txt", "TERMS.txt"), terms.voiceModelTerms.map { it.title })
   }
 
-  // The documents come from the releases pinned in nvfetcher.toml, which the build does not check
-  // against assets.tsv, so a release bumped in only one of them fails here.
-  // The ONNX Runtime terms are not pinned here, because the build already refuses an ONNX Runtime
-  // archive whose hash differs from its row in assets.tsv.
+  // The build does not check nvfetcher.toml against assets.tsv, so a release bumped in only one of
+  // them fails here.
   // To follow a new release, bump its version in both files and run `nix run .#nvfetcher`.
   @Test
   fun `each bundled voice model document is the published file the catalog pins`() {

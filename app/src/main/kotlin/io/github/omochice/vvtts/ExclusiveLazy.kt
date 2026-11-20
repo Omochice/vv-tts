@@ -8,7 +8,6 @@ package io.github.omochice.vvtts
 class ExclusiveLazy<T : Any> {
   private var value: T? = null
 
-  // One lock covers both creation and use.
   // Kotlin's lazy would serialize creation only, and the values held here are not thread-safe.
   /**
    * Runs [block] with the value, creating it with [create] first if no use has created it yet.
