@@ -43,6 +43,11 @@ spec:
           require_code_owner_review: false
           require_last_push_approval: false
           required_review_thread_resolution: false
+        required_status_checks:
+          strict_required_status_checks_policy: true
+          contexts:
+            - context: Status Check
+              app: github-actions
         non_fast_forward: true
         deletion: true
         creation: false
