@@ -1,5 +1,6 @@
 package io.github.omochice.vvtts.assets
 
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.file.FileAlreadyExistsException
 import kotlin.test.Test
@@ -7,6 +8,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
@@ -208,5 +210,43 @@ class TarGzTest {
       extractTarGz(archive.inputStream(), destination)
     }
     assertEquals("first", File(destination, "a").readText())
+  }
+
+  private class CloseRecordingStream(bytes: ByteArray) : ByteArrayInputStream(bytes) {
+    var isClosed = false
+
+    override fun close() {
+      isClosed = true
+    }
+  }
+
+  @Test
+  fun `the input is closed once the archive is extracted`() {
+    val input = CloseRecordingStream(TarFixture().directory("top/").file("top/a", "a").gzip())
+
+    extractTarGz(input, tmp.newFolder())
+
+    assertTrue(input.isClosed)
+  }
+
+  @Test
+  fun `the input is closed when it is not gzip`() {
+    val input = CloseRecordingStream(TarFixture().directory("top/").file("top/a", "a").tarBytes())
+
+    assertFailsWith<MalformedArchiveException> { extractTarGz(input, tmp.newFolder()) }
+
+    assertTrue(input.isClosed)
+  }
+
+  @Test
+  fun `the input is closed when an entry is rejected`() {
+    val input =
+        CloseRecordingStream(
+            TarFixture().directory("top/").entry("top/link", '2', ByteArray(0)).gzip()
+        )
+
+    assertFailsWith<MalformedArchiveException> { extractTarGz(input, tmp.newFolder()) }
+
+    assertTrue(input.isClosed)
   }
 }
