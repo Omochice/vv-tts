@@ -43,9 +43,9 @@ internal constructor(val word: String, val reading: String, val accent: Int) {
   }
 }
 
-// VOICEVOX CORE crashes the whole process on a surface that is empty or holds a newline, so every
-// character that can break a line, a line-based file or a JNI string is refused rather than only
-// the measured ones.
+// VOICEVOX CORE crashes the whole process on a surface that is empty or holds a newline,
+// so every character that can break a line, a line-based file or a JNI string is refused
+// rather than only the measured ones.
 private fun wordProblem(word: String): EntryProblem? =
     when {
       word.isEmpty() -> EntryProblem.EMPTY_WORD
@@ -64,8 +64,8 @@ private fun isUnusable(text: String, index: Int): Boolean {
   }
 }
 
-// The exact bound is the number of moras by VOICEVOX's own rule, which only VOICEVOX can tell, so
-// the engine registers a word flat when it refuses the accent rather than this check guessing.
+// The exact bound is the number of moras by VOICEVOX's own rule, which only VOICEVOX can tell,
+// so the engine registers a word flat when it refuses the accent rather than this check guessing.
 private fun accentProblem(reading: String, accent: Int): EntryProblem? =
     if (accent in 0..reading.length) null else EntryProblem.ACCENT_OUT_OF_RANGE
 

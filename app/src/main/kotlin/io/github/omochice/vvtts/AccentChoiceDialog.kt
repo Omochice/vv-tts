@@ -74,8 +74,8 @@ internal class AccentChoiceDialog(
     }
   }
 
-  // The track can fail to be created when the system runs short of audio resources, which is no
-  // reason to end the settings screen.
+  // The track can fail to be created when the system runs short of audio resources,
+  // which is no reason to end the settings screen.
   @Suppress("TooGenericExceptionCaught")
   private fun play(pcm: ByteArray) {
     try {

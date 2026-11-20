@@ -20,8 +20,8 @@ internal class PreviewPlayer {
   fun play(pcm: ByteArray) {
     stop()
     if (pcm.isEmpty()) return
-    // A static track, because the whole word is at hand and lasts a few seconds at most, so
-    // streaming it from a thread of its own would add a thread without starting any sooner.
+    // A static track, because the whole word is at hand and lasts a few seconds at most,
+    // so streaming it from a thread of its own would add a thread without starting any sooner.
     val played =
         AudioTrack.Builder()
             .setAudioAttributes(

@@ -135,8 +135,8 @@ class SettingsActivity : Activity() {
   ) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     if (requestCode != REQUEST_NOTIFICATIONS) return
-    // Scheduled whatever the answer, because the download works without notifications; the
-    // system still lists it among running tasks.
+    // Scheduled whatever the answer, because the download works without notifications;
+    // the system still lists it among running tasks.
     awaitingPermission?.let(::schedule)
     awaitingPermission = null
   }

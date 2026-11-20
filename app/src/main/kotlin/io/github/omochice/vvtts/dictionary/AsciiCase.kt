@@ -1,7 +1,7 @@
 package io.github.omochice.vvtts.dictionary
 
-// Only ASCII letters are mapped, because VOICEVOX matching was measured with ASCII words alone, and
-// full case mapping changes lengths, as ß becomes SS.
+// Only ASCII letters are mapped, because VOICEVOX matching was measured with ASCII words alone,
+// and full case mapping changes lengths, as ß becomes SS.
 internal fun String.lowercaseAscii(): String =
     String(CharArray(length) { this[it].let { c -> if (c in 'A'..'Z') c + ('a' - 'A') else c } })
 
