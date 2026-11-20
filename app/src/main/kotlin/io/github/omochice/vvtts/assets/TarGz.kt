@@ -26,6 +26,8 @@ class MalformedArchiveException(message: String, cause: Throwable? = null) :
  *
  * On failure, entries extracted so far are left in place for the caller to discard.
  *
+ * [input] is closed on return, whether or not the extraction succeeded.
+ *
  * @throws MalformedArchiveException if the input is not gzip, or the archive is truncated, has an
  *   unknown entry type, header format or checksum, a path leaving [destination], an entry outside
  *   the single top-level directory, or data after its end-of-archive marker.
@@ -34,10 +36,14 @@ class MalformedArchiveException(message: String, cause: Throwable? = null) :
  */
 fun extractTarGz(input: InputStream, destination: File) {
   try {
-    // DataInputStream rather than InputStream.readNBytes, which Android only has from API 33.
-    val tar = DataInputStream(GZIPInputStream(input))
-    extractEntries(tar, destination)
-    readToEnd(tar)
+    // GZIPInputStream can throw from its constructor, before there is a wrapper to close.
+    input.use {
+      // DataInputStream rather than InputStream.readNBytes, which Android only has from API 33.
+      DataInputStream(GZIPInputStream(input)).use { tar ->
+        extractEntries(tar, destination)
+        readToEnd(tar)
+      }
+    }
   } catch (e: EOFException) {
     throw MalformedArchiveException("archive ends early", e)
   } catch (e: ZipException) {
