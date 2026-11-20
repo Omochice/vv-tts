@@ -229,6 +229,19 @@
               '';
           formatting = treefmt.config.build.check self;
           pre-commit = pre-commit-check;
+          renovate =
+            pkgs.runCommand "validate-renovate-config"
+              {
+                buildInputs = with pkgs; [
+                  renovate
+                ];
+                src = self;
+              }
+              ''
+                cd $src
+                renovate-config-validator --strict renovate.json5
+                touch $out
+              '';
           # keep-sorted end
         };
         devShells = pkgs.lib.pipe devPackages [

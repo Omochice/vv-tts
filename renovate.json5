@@ -1,0 +1,46 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "github>Omochice/personal-renovate-config#v3.0.0",
+    "github>Omochice/personal-renovate-config:nix#v3.0.0",
+  ],
+  customManagers: [
+    {
+      customType: "jsonata",
+      fileFormat: "toml",
+      managerFilePatterns: [
+        "/^nvfetcher.toml$/",
+      ],
+      matchStrings: [
+        '*.{ \
+          "depName": (fetch.url ~> /^https:\\/\\/github\\.com\\/([^\\/]+?\\/[^\\/]+)\\/releases\\/download\\//).groups[0], \
+          "currentValue": src.manual, \
+          "datasource": "github-releases" \
+        }',
+      ],
+    },
+  ],
+  packageRules: [
+    {
+      description: "A VOICEVOX release also needs _sources/ regenerated and assets.tsv updated by hand, so its pull request must wait for a person even when the shared preset would merge it",
+      matchFileNames: [
+        "nvfetcher.toml",
+      ],
+      automerge: false,
+    },
+    {
+      description: "ONNX Runtime builds for VOICEVOX are tagged voicevox_onnxruntime-<version>",
+      matchPackageNames: [
+        "VOICEVOX/onnxruntime-builder",
+      ],
+      extractVersion: "^voicevox_onnxruntime-(?<version>.+)$",
+    },
+    {
+      description: "VOICEVOX CORE is not on any public Maven repository; Gradle resolves it from the zip pinned in nvfetcher.toml, so it is bumped there",
+      matchPackageNames: [
+        "jp.hiroshiba.voicevoxcore:voicevoxcore-android",
+      ],
+      enabled: false,
+    },
+  ],
+}
