@@ -143,14 +143,9 @@ class VvTtsService : TextToSpeechService() {
   }
 
   private companion object {
-    // The framework destroys the service when its last client unbinds and creates a new instance in
-    // the same process on the next bind.
-    // A per-instance engine leaked one engine and voice model per connection: native heap grew by
-    // about 390 MB each time until Android killed the process on the 8th connection.
-    // Closing the engine in onDestroy is impossible because VOICEVOX CORE's Java API has no public
-    // close, and its finalizers rarely run because the Java heap stays at a few megabytes.
-    // Instances synthesize on threads of their own, and an old instance's synthesis can still be in
-    // flight when a new instance starts, hence one user at a time.
+    // Not per instance, because the framework recreates the service on every bind and VOICEVOX
+    // CORE's Java API has no close, so each connection leaked about 390 MB of native heap.
+    // One user at a time, because an old instance can still be synthesizing when a new one starts.
     val sharedLoop = ExclusiveLazy<SynthesisLoop>()
   }
 }

@@ -14,13 +14,6 @@ class Terms(val voiceModelTerms: List<TermsDocument>, val onnxRuntimeTerms: Stri
     /**
      * Reads the bundled documents [catalog] lists as terms, and the ONNX Runtime terms.
      *
-     * The documents are taken at build time from the releases pinned in `nvfetcher.toml`:
-     * README.txt and TERMS.txt from the voice model release, and the ONNX Runtime terms from the
-     * TERMS.txt inside the arm64 archive the catalog lists.
-     *
-     * To follow a new release, bump its version in both `nvfetcher.toml` and `assets.tsv` and run
-     * `nix run .#nvfetcher`.
-     *
      * @throws IllegalStateException if a document is not bundled.
      */
     fun load(catalog: AssetCatalog): Terms =
