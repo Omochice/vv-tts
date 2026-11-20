@@ -52,6 +52,26 @@ jobs:
           path: |
             app/build/reports/
             text/build/reports/
+  nvfetcher-check:
+    timeout-minutes: 10
+    name: Check nvfetcher sources
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - run: nix run .#nvfetcher
+      - name: Check that _sources/ matches nvfetcher.toml
+        run: |
+          if [ -n "$(git status --porcelain -- _sources)" ]; then
+            git status --short -- _sources
+            git diff -- _sources
+            exit 1
+          fi
   coverage-report:
     timeout-minutes: 5
     name: Report Coverage
@@ -105,6 +125,7 @@ jobs:
       - coverage-report
       - flake-check
       - gradle-check
+      - nvfetcher-check
       # keep-sorted end
     permissions:
       actions: read
