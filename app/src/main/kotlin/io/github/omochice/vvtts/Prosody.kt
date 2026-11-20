@@ -1,7 +1,7 @@
 package io.github.omochice.vvtts
 
-// Provisional: a reader app's speech rate 10 took the engine to 1.48 GB PSS on a Pixel 9a, and 0.5
-// is the lowest speed VOICEVOX's own editor offers.
+// Provisional: a reader app's speech rate 10 took the engine to 1.48 GB PSS on a Pixel 9a,
+// and 0.5 is the lowest speed VOICEVOX's own editor offers.
 // Rejecting a slower rate instead would leave the reader app silent.
 private const val PROVISIONAL_MIN_SPEED_SCALE = 0.5
 

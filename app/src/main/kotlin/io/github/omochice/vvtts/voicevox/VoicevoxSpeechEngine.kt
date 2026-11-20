@@ -96,8 +96,8 @@ class VoicevoxSpeechEngine(
     return pcmFromWav(synthesizer.synthesis(query, voice.styleId).perform())
   }
 
-  // The analyzer is not used for this, because it reads katakana as text: it split
-  // トウキョウトッキョキョカキョク into 12 moras where the dictionary counts 11, and ーエ into one.
+  // The analyzer is not used for this, because it reads katakana as text:
+  // it split トウキョウトッキョキョカキョク into 12 moras where the dictionary counts 11, and ーエ into one.
   /**
    * Returns the number of characters of each mora of [kana], as VOICEVOX's kana parser splits it,
    * or null when the parser refuses it or finds more than one phrase.
@@ -131,8 +131,8 @@ class VoicevoxSpeechEngine(
 
   // A narrower catch would let a type nobody listed fail the request, and speaking without some of
   // the user's words is better than not speaking.
-  // Exceptions are logged by type only, because VOICEVOX's messages quote the word, and the log
-  // must not carry the user's text.
+  // Exceptions are logged by type only, because VOICEVOX's messages quote the word,
+  // and the log must not carry the user's text.
   @Suppress("TooGenericExceptionCaught")
   private fun applyDictionaryIfChanged() {
     val entries =

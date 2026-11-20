@@ -64,8 +64,9 @@ class AssetDownloadJobService : JobService() {
     val isStopRequested = { stop.count == 0L }
     val installer =
         AssetInstaller(AssetCatalog.bundled, AssetLayout(filesDir), Build.SUPPORTED_ABIS.first())
-    // Retried within the run rather than through jobFinished(params, true), because a job
-    // rescheduled that way was seen never to run again although all its constraints were met.
+    // Retried within the run rather than through jobFinished(params, true),
+    // because a job rescheduled that way was seen never to run again
+    // although all its constraints were met.
     val result =
         installWithRetries(
             MAX_ATTEMPTS,
@@ -79,8 +80,8 @@ class AssetDownloadJobService : JobService() {
         )
     Log.i(TAG, "download finished: $result")
     run.finish(result)
-    // The system has taken this run back and restarts it once its constraints hold again, so
-    // neither the notification nor jobFinished belongs to it any more.
+    // The system has taken this run back and restarts it once its constraints hold again,
+    // so neither the notification nor jobFinished belongs to it any more.
     if (isStopRequested()) return
     val final =
         when (result) {

@@ -60,8 +60,8 @@ class AssetDownloader(private val http: HttpRangeFetcher = HttpRangeFetcher()) {
       onProgress: (bytesSoFar: Long, totalBytes: Long) -> Unit = { _, _ -> },
       isStopRequested: () -> Boolean,
   ): DownloadResult {
-    // Not re-verified: only verified files are ever moved to the target, and re-hashing every
-    // installed model on each call would cost seconds per file.
+    // Not re-verified: only verified files are ever moved to the target,
+    // and re-hashing every installed model on each call would cost seconds per file.
     if (target.exists()) return DownloadResult.Installed
     val partial = File(target.parentFile, target.name + ".part")
     if (partial.length() < remote.sizeBytes) {
