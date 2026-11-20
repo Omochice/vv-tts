@@ -46,7 +46,9 @@ class AssetDownloadJobService : JobService() {
         JOB_END_NOTIFICATION_POLICY_DETACH,
     )
     val stop = CountDownLatch(1).also { stopSignal = it }
-    thread(name = "asset-download") { download(params, voiceModelFileName, stop) }
+    // Not on the worker, which could start late and supersede the run that replaced it.
+    val run = state.startRun(voiceModelFileName)
+    thread(name = "asset-download") { download(params, voiceModelFileName, run, stop) }
     return true
   }
 
@@ -56,8 +58,12 @@ class AssetDownloadJobService : JobService() {
     return true
   }
 
-  private fun download(params: JobParameters, voiceModelFileName: String, stop: CountDownLatch) {
-    val run = state.startRun(voiceModelFileName)
+  private fun download(
+      params: JobParameters,
+      voiceModelFileName: String,
+      run: InstallStateHolder.Run,
+      stop: CountDownLatch,
+  ) {
     val isStopRequested = { stop.count == 0L }
     val installer =
         AssetInstaller(AssetCatalog.load(), AssetLayout(filesDir), Build.SUPPORTED_ABIS.first())
