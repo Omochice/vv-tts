@@ -22,6 +22,32 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
       - run: nix flake check --print-build-logs
+  gradle-check:
+    timeout-minutes: 30
+    name: Check Gradle project
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - run: nix develop --command gradle check assembleDebug
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            text/build/reports/
   check-fixup:
     timeout-minutes: 5
     name: Check fixup commits
@@ -51,6 +77,7 @@ jobs:
       # keep-sorted start
       - check-fixup
       - flake-check
+      - gradle-check
       # keep-sorted end
     permissions:
       actions: read
