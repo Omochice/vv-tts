@@ -135,6 +135,8 @@
         androidSdkHome = pkgs.makeSetupHook { name = "android-sdk-home"; } (
           pkgs.writeText "android-sdk-home.sh" ''
             export ANDROID_HOME=${androidSdk}/libexec/android-sdk
+            # The Android Gradle plugin refuses to build when this names another SDK, and GitHub's runners set it to their own.
+            export ANDROID_SDK_ROOT=$ANDROID_HOME
           ''
         );
         devPackages = rec {
