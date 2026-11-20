@@ -64,7 +64,9 @@ class VvTtsService : TextToSpeechService() {
           callback.error(TextToSpeech.ERROR_SYNTHESIS)
           return
         }
-    callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
+    // The framework can stop a request before onSynthesizeText runs.
+    val started = callback.start(SpeechEngine.SAMPLE_RATE_HZ, AudioFormat.ENCODING_PCM_16BIT, 1)
+    if (started != TextToSpeech.SUCCESS) return
     try {
       loop.run(
           chunks,
