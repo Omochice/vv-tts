@@ -2,13 +2,6 @@
 
 An Android text-to-speech engine that speaks Japanese with [VOICEVOX](https://voicevox.hiroshiba.jp/) voices, on the device.
 
-## Overview
-
-vv-tts registers itself as a system text-to-speech engine, so that apps such as e-book readers can read aloud with it.\
-Speech is synthesized on the device by [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core).
-
-The settings screen downloads voice models, sets the default voice, and keeps a dictionary of how words are read, including their accent.
-
 ## Supports
 
 - Android 14 (API 34) or higher
