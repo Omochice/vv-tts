@@ -2,13 +2,15 @@ package io.github.omochice.vvtts
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter
 import android.util.Log
+import android.view.Menu
+import android.view.View
 import android.view.WindowInsets
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -23,7 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Lets the user download voice models after agreeing to their terms, choose the default voice, read
- * the terms again later, and keep a dictionary of how words are read.
+ * the terms again later, open the licenses of the libraries the app carries, and keep a dictionary
+ * of how words are read.
  */
 class SettingsActivity : Activity() {
   private val catalog by lazy { AssetCatalog.bundled }
@@ -70,18 +73,12 @@ class SettingsActivity : Activity() {
     defaultVoice = DefaultVoicePicker(this)
     voiceModelRows =
         VoiceModelRows(this, catalog.voiceModels) { terms.requestConsent(it.file.fileName) }
-    val termsButton =
-        Button(this).apply {
-          setText(R.string.button_terms)
-          setOnClickListener { terms.show(forVoiceModel = null) }
-        }
     val content =
         LinearLayout(this).apply {
           orientation = LinearLayout.VERTICAL
           val gap = dp(16)
           setPadding(gap, gap, gap, gap)
           addView(status)
-          addView(termsButton)
           addView(defaultVoice.view)
           addView(dictionary.view)
           addView(headingView(getString(R.string.voice_models_heading)))
@@ -102,6 +99,18 @@ class SettingsActivity : Activity() {
           }
         }
     )
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    menu.add(R.string.menu_terms).setOnMenuItemClickListener {
+      terms.show(forVoiceModel = null)
+      true
+    }
+    menu.add(R.string.menu_licenses).setOnMenuItemClickListener {
+      startActivity(Intent(this, LicensesActivity::class.java))
+      true
+    }
+    return true
   }
 
   override fun onStart() {
@@ -168,7 +177,9 @@ class SettingsActivity : Activity() {
             pendingVoiceModel,
             installed.isNotEmpty(),
         )
-    status.text = describe(current)
+    val message = describe(current)
+    status.text = message
+    status.visibility = if (message == null) View.GONE else View.VISIBLE
     defaultVoice.show(installed)
     val baseParts = layout.hasBaseParts()
     voiceModelRows.update({ baseParts && layout.hasVoiceModel(it) }, current.allowsDownload)
@@ -178,9 +189,10 @@ class SettingsActivity : Activity() {
   private fun previewVoice(): SpeakableVoice? =
       PreferredVoiceStore(this).defaultAmong(installedVoices(catalog.voiceModels, layout))
 
-  private fun describe(current: SettingsStatus): String =
+  // Null when there is nothing to tell: the rows already say which voice models are installed.
+  private fun describe(current: SettingsStatus): String? =
       when (current) {
-        SettingsStatus.Installed -> getString(R.string.status_installed)
+        SettingsStatus.Installed -> null
         SettingsStatus.NotInstalled -> getString(R.string.status_not_installed)
         is SettingsStatus.Pending ->
             getString(R.string.status_pending, voiceModelName(current.voiceModelFileName))

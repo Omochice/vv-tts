@@ -1,0 +1,8 @@
+{
+  "uniqueId": "jp.hiroshiba.voicevoxcore:voicevoxcore-android",
+  "name": "VOICEVOX CORE",
+  "website": "https://github.com/VOICEVOX/voicevox_core",
+  "licenses": [
+    "MIT-voicevox_core"
+  ]
+}

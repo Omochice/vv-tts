@@ -1,0 +1,11 @@
+{
+  "uniqueId": "llvm:libcxx",
+  "artifactVersion": "clang-r522817",
+  "name": "LLVM libc++",
+  "description": "",
+  "developers": [],
+  "website": "https://libcxx.llvm.org/",
+  "licenses": [
+    "Apache-2.0-WITH-LLVM-exception-libcxx"
+  ]
+}
