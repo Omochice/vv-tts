@@ -27,15 +27,11 @@ The toolchain (JDK, Gradle, Android SDK) comes from the [Nix](https://nixos.org/
 # Enter the dev shell (or use direnv)
 nix develop
 
-# Lint, static analysis and unit tests
-gradle check
-
 # Building
 gradle assembleDebug
-
-# Formatting
-nix fmt
 ```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ## License
 
