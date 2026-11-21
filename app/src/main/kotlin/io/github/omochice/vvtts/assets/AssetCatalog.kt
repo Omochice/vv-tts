@@ -80,8 +80,8 @@ class AssetCatalog(
       val dictionaries = entries.filterIsInstance<Entry.Dictionary>()
       require(dictionaries.size == 1) { "expected one dictionary, found ${dictionaries.size}" }
       val onnxRuntimes = entries.filterIsInstance<Entry.OnnxRuntime>()
-      // Several releases are rejected because the bundled ONNX Runtime terms are those of a single
-      // release.
+      // Several releases are rejected
+      // because the bundled ONNX Runtime terms are those of a single release.
       val onnxRuntimeReleases = onnxRuntimes.map { it.release }.distinct()
       require(onnxRuntimeReleases.size <= 1) {
         "expected one ONNX Runtime release, found $onnxRuntimeReleases"

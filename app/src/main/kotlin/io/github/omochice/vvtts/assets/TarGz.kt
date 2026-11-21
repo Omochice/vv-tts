@@ -34,9 +34,9 @@ fun extractTarGz(input: InputStream, destination: File) {
   try {
     // GZIPInputStream can throw from its constructor, before there is a wrapper to close.
     input.use {
-      // DataInputStream rather than InputStream.readNBytes, because readFully reports a truncated
-      // archive as EOFException while readNBytes returns a short count that each read would have
-      // to check.
+      // DataInputStream rather than InputStream.readNBytes,
+      // because readFully reports a truncated archive as EOFException
+      // while readNBytes returns a short count that each read would have to check.
       DataInputStream(GZIPInputStream(input, 64 * 1024)).use { tar ->
         extractEntries(tar, destination)
         readToEnd(tar)
@@ -98,9 +98,9 @@ private class TarHeader(val name: String, val size: Long, val isDirectory: Boole
       if (octal(block, CHECKSUM_OFFSET, CHECKSUM_LENGTH) != checksum(block)) {
         throw MalformedArchiveException("header checksum mismatch for $name")
       }
-      // POSIX ustar is refused rather than also accepted, because its prefix field would have to be
-      // joined to the name, while both pinned archives are GNU tar, where that field means
-      // something else.
+      // POSIX ustar is refused rather than also accepted,
+      // because its prefix field would have to be joined to the name,
+      // while both pinned archives are GNU tar, where that field means something else.
       if (String(block, MAGIC_OFFSET, GNU_MAGIC.length, Charsets.US_ASCII) != GNU_MAGIC) {
         throw MalformedArchiveException("$name is not in GNU tar format")
       }

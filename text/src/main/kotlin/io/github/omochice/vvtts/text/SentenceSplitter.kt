@@ -47,8 +47,8 @@ class SentenceSplitter(private val maxBracketContentLength: Int) {
     }
     chunks += text.substring(start)
     // Bracket-only fragments are dropped rather than merged into a neighbour.
-    // They carry nothing to read, and merging would pull a newline or a page-cut remnant into a
-    // spoken chunk.
+    // They carry nothing to read,
+    // and merging would pull a newline or a page-cut remnant into a spoken chunk.
     return chunks
         .map { it.trim() }
         .filter { chunk -> chunk.any { it !in OPENERS && it !in CLOSERS } }

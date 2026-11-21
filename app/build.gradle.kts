@@ -67,8 +67,8 @@ detekt {
 }
 
 aboutLibraries {
-  // Fetching licenses online would make the generated list depend on the network and on a GitHub
-  // token.
+  // Fetching licenses online would make the generated list depend on the network
+  // and on a GitHub token.
   // The license texts the POMs leave out come from config/licenses instead.
   offlineMode = true
   collect {
