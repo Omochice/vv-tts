@@ -27,9 +27,9 @@ internal fun buildUserDict(words: List<DictionaryEntry>): BuiltUserDict {
   val skippedBecause = mutableListOf<String>()
   for (word in words) {
     val refusal = addTo(userDict, word, word.accent) ?: continue
-    // Flat is accepted for every reading tried, while the accepted accents end at VOICEVOX's own
-    // mora count, which validation can only bound loosely, so a word is better read flat than not
-    // at all.
+    // Flat is accepted for every reading tried,
+    // while the accepted accents end at VOICEVOX's own mora count,
+    // which validation can only bound loosely, so a word is better read flat than not at all.
     if (word.accent == 0) {
       skippedBecause += refusal
     } else {

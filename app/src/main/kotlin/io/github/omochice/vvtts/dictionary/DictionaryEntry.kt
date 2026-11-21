@@ -85,8 +85,8 @@ private const val SOKUON = 'ッ'
 private const val SMALL_WA = 'ヮ'
 
 // Ported from the small kana rules of the VOICEVOX engine, which VOICEVOX CORE took over.
-// They could not be confirmed against the native library, so a small wa at the start is refused as
-// well.
+// They could not be confirmed against the native library,
+// so a small wa at the start is refused as well.
 // Refusing a reading VOICEVOX would take costs the user one more try, while accepting one it
 // rejects leaves an entry that is never applied.
 private fun hasMisplacedSmallKana(reading: String): Boolean =
